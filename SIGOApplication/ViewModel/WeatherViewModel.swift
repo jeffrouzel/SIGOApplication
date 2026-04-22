@@ -108,7 +108,7 @@ class WeatherViewModel{
     }
     // Rain Related
     var precipitationChance: String {
-        guard let pop = weather?.list.first?.pop else { return "--" }
+        guard let pop = selectedForecast?.pop else { return "--" }
         return "\(Int((pop * 100).rounded()))%"
     }
     
@@ -121,14 +121,14 @@ class WeatherViewModel{
 
     var isDay: Bool {
         guard let weather,
-              let dt = weather.list.first?.dt else { return true }
+              let dt = selectedForecast?.dt else { return true }
         let current = dt + weather.city.timezone
         return current >= weather.city.sunrise + weather.city.timezone &&
         current < weather.city.sunset + weather.city.timezone
     }
 
     var weatherIconName: String {
-        let condition = weather?.list.first?.weather.first?.main ?? "Clear"
+        let condition = selectedForecast?.weather.first?.main ?? "Clear"
         switch condition.lowercased() {
         case "clear":
             return isDay ? "sun.max.fill" : "moon.stars.fill"
@@ -155,6 +155,28 @@ class WeatherViewModel{
         formatter.dateFormat = "h:mm a"
         formatter.timeZone = TimeZone(secondsFromGMT: timezone)
         return formatter.string(from: date)
+    }
+    
+    // MARK: FOR FORECAST DROPDOWN
+    // Labels
+    func labelForIndex(_ index: Int) -> String {
+        if index == 0 { return "Current" }
+        
+        let totalHours = index * 3
+        let days = totalHours / 24
+        let hours = totalHours % 24
+
+        switch (days, hours) {
+        case (0, let h): return "\(h) hours later"
+        case (let d, 0): return "\(d == 1 ? "1 day" : "\(d) days") later"
+        case (let d, let h): return "\(d == 1 ? "1 day" : "\(d) days") and \(h) hours later"
+        }
+    }
+
+    // Array of the labels
+    var forecastLabels: [String] {
+        guard let timelist = weather?.list else { return [] }
+        return timelist.indices.map { labelForIndex($0) } // acts like (index in labelForIndex(index)) useful implementation to shorten code
     }
 }
 
