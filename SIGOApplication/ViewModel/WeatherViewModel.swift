@@ -41,10 +41,8 @@ class WeatherViewModel{
             }
         }
     }
-
-    // MARK: DATA
-    var forecasts: [ForecastItem] = []
-
+    
+    // MARK: HEAD DATA
     var cityName: String {
         weather?.city.name ?? ""
     }
@@ -52,27 +50,7 @@ class WeatherViewModel{
     var countryName: String {
         weather?.city.country ?? ""
     }
-
-    // MARK: CURRENT CONDITIONS
-    var temperatureText: String {
-        guard let temp = weather?.list.first?.main.temp else { return "--" }
-        return "\(Int(temp.rounded()))°C"
-    }
-
-    var feelsLikeText: String {
-        guard let feelsLike = weather?.list.first?.main.feelsLike else { return "--" }
-        return "Feels like \(Int(feelsLike.rounded()))°C"
-    }
-
-    var conditionText: String {
-        weather?.list.first?.weather.first?.description.capitalized ?? "Unknown"
-    }
-
-    var humidityText: String {
-        guard let humidity = weather?.list.first?.main.humidity else { return "--" }
-        return "Humidity: \(humidity)%"
-    }
-
+    
     var sunriseText: String {
         guard let weather else { return "--:--" }
         return formatTime(weather.city.sunrise, timezone: weather.city.timezone)
@@ -83,9 +61,60 @@ class WeatherViewModel{
         return formatTime(weather.city.sunset, timezone: weather.city.timezone)
     }
     
+    // MARK: FOR WEATHER FORECAST LIST (up to 40 items, every 3hrs for 5 days)
+    
+    var selectedIndex: Int = 0 {
+        didSet {
+            // clamp to valid range so callers don't have to worry about bounds
+            guard let list = weather?.list, !list.isEmpty else { return }
+            selectedIndex = max(0, min(selectedIndex, list.count - 1))
+        }
+    }
+
+    // For changing of forecast based on index (3hrs interval per index)
+    private var selectedForecast: ForecastItem? {
+        weather?.list[selectedIndex]
+    }
+    // MARK: FORECAST DATA
+    // Main items
+    var temperatureText: String {
+        guard let temp = selectedForecast?.main.temp else { return "--°C" }
+        return "\(Int(temp.rounded()))°C"
+    }
+    
+    var feelsLikeText: String {
+        guard let feelsLike = selectedForecast?.main.feelsLike else { return "--°C" }
+        return "Feels like \(Int(feelsLike.rounded()))°C"
+    }
+    
+    var minTempText: String {
+        guard let minTemp = selectedForecast?.main.tempMin else { return "--°C" }
+        return "Min: \(Int(minTemp.rounded()))°C"
+    }
+    
+    var maxTempText: String {
+        guard let maxTemp = selectedForecast?.main.tempMax else { return "--°C" }
+        return "Max: \(Int(maxTemp.rounded()))°C"
+    }
+    
+    var humidityText: String {
+        guard let humidity = selectedForecast?.main.humidity else { return "--" }
+        return "Humidity: \(humidity)%"
+    }
+    
+    // Weather Items
+    var conditionText: String {
+        selectedForecast?.weather.first?.description.capitalized ?? "Unknown"
+    }
+    // Rain Related
     var precipitationChance: String {
         guard let pop = weather?.list.first?.pop else { return "--" }
         return "\(Int((pop * 100).rounded()))%"
+    }
+    
+    var rainDropSize: String? {
+        guard let threeHourRainData = selectedForecast?.rain else { return "--" }
+        return "\(threeHourRainData) mm"
     }
 
     // MARK: Logic for WeatherIcons
