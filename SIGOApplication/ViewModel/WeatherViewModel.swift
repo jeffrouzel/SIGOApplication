@@ -99,7 +99,12 @@ class WeatherViewModel{
     
     var humidityText: String {
         guard let humidity = selectedForecast?.main.humidity else { return "--" }
-        return "Humidity: \(humidity)%"
+        return "\(humidity)%"
+    }
+    
+    var windSpeedText: String {
+        guard let windSpeed = selectedForecast?.wind.speed else { return "--" }
+        return "\(Int(windSpeed.rounded())) km/h"
     }
     
     // Weather Items
@@ -146,8 +151,6 @@ class WeatherViewModel{
             return "cloud.fill"
         }
     }
-
-
     // MARK: Private helpers
     private func formatTime(_ unix: Int, timezone: Int) -> String {
         let date = Date(timeIntervalSince1970: TimeInterval(unix))
@@ -167,9 +170,9 @@ class WeatherViewModel{
         let hours = totalHours % 24
 
         switch (days, hours) {
-        case (0, let h): return "\(h) hours later"
-        case (let d, 0): return "\(d == 1 ? "1 day" : "\(d) days") later"
-        case (let d, let h): return "\(d == 1 ? "1 day" : "\(d) days") and \(h) hours later"
+        case (0, let h): return "+ \(h)Hrs"
+        case (let d, 0): return "\(d == 1 ? "+ 1 Day" : "+ \(d) Days")"
+        case (let d, let h): return "+ \("\(d)D") & \(h)Hrs"
         }
     }
 
@@ -177,6 +180,67 @@ class WeatherViewModel{
     var forecastLabels: [String] {
         guard let timelist = weather?.list else { return [] }
         return timelist.indices.map { labelForIndex($0) } // acts like (index in labelForIndex(index)) useful implementation to shorten code
+    }
+    // MARK: LOGIC FOR WEATHER TIPS
+    var weatherTip: String {
+        guard let forecast = selectedForecast else { return "" }
+
+        let condition = forecast.weather.first?.main.lowercased() ?? ""
+        let pop = Int((forecast.pop * 100).rounded())
+        let temp = Int(forecast.main.temp.rounded())
+        let humidity = forecast.main.humidity
+
+        switch condition {
+        case "rain", "drizzle":
+            if pop >= 70 {
+                return "Heavy rain expected. Bringing an umbrella is a must. Also be careful of big puddles!!"
+            } else {
+                return "Light rain possible (\(pop)% chance). An umbrella wouldn't hurt."
+            }
+
+        case "thunderstorm":
+            return "⚠️ Thunderstorm ahead. It is better to avoid going out and stay indoors."
+
+        case "clear":
+            if temp >= 35 {
+                return "⚠️ Caution!! High temperature of \(temp)°C. Stay hydrated and wear sunscreen."
+            } else if temp >= 30 {
+                return "Warm and clear. Great weather — just watch the heat."
+            } else {
+                return isDay ? "Clear skies today. Enjoy the weather!" : "Clear night sky tonight. Good for stargazing!!"
+            }
+
+        case "clouds":
+            if humidity >= 80 {
+                return "Cloudy and humid at \(humidity)%. It may feel hotter than it looks."
+            } else {
+                return "Overcast skies. Comfortable enough to head out."
+            }
+
+        // May not occur due to location set in PH
+        case "snow":
+            return "Snow expected. Be careful on icy roads and dress warmly."
+
+        case "mist", "fog", "haze":
+            return "⚠️ Low visibility due to \(condition). Have caution while traveling."
+
+        default:
+            if pop >= 50 {
+                return "A chance of (\(pop)%) to rain!! Consider bringing an umbrella."
+            }
+            return "Have a nice day!"
+        }
+    }
+    var weatherDatePageTitle: String {
+        guard let forecast = selectedForecast,
+              let weather = weather else { return "Weather Tip" }
+        
+        let date = Date(timeIntervalSince1970: TimeInterval(forecast.dt))
+        let formatter = DateFormatter()
+        formatter.dateFormat = "MM/dd/yyyy"
+        formatter.timeZone = TimeZone(secondsFromGMT: weather.city.timezone)
+        
+        return "\(formatter.string(from: date))"
     }
 }
 

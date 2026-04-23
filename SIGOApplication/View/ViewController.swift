@@ -5,10 +5,17 @@
 //  Created by training2 on 4/20/26.
 //
 
+// nsdate
 import UIKit
 import CoreLocation
 
 class ViewController: UIViewController {
+    
+    // Views
+    @IBOutlet weak var mainInfo: UIView!
+    @IBOutlet weak var temperatureView: UIView!
+    @IBOutlet weak var detailsView: UIView!
+    @IBOutlet weak var sunView: UIView!
     
     // Dropdown UI Components
     @IBOutlet weak var forecastDD: UIStackView!
@@ -16,16 +23,28 @@ class ViewController: UIViewController {
     @IBOutlet weak var pickerView: UIPickerView!
     
     // Data UI Components
+    @IBOutlet weak var icon_condition: UIImageView!
     @IBOutlet weak var lbl_city: UILabel!
     @IBOutlet weak var lbl_temp: UILabel!
+    @IBOutlet weak var lbl_feelslike: UILabel!
+    
     @IBOutlet weak var lbl_minTemp: UILabel!
     @IBOutlet weak var lbl_maxTemp: UILabel!
+    
+    @IBOutlet weak var lbl_humidity: UILabel!
+    @IBOutlet weak var lbl_rainChance: UILabel!
+    @IBOutlet weak var lbl_wind: UILabel!
+    
+    @IBOutlet weak var lbl_sunrise: UILabel!
+    @IBOutlet weak var lbl_sunset: UILabel!
     
     var weatherViewModel: WeatherViewModel = WeatherViewModel()
     private let locationManager = CLLocationManager()
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        // UI modifications
+        mainInfoUI()
         // Dropdown
         dropdownUI()
         pickerView.isHidden = true
@@ -59,8 +78,18 @@ class ViewController: UIViewController {
         
         lbl_city.text = weatherViewModel.cityName
         lbl_temp.text = weatherViewModel.temperatureText
+        lbl_feelslike.text = weatherViewModel.feelsLikeText
         lbl_minTemp.text = weatherViewModel.minTempText
         lbl_maxTemp.text = weatherViewModel.maxTempText
+        icon_condition.image = UIImage(systemName: weatherViewModel.weatherIconName)
+        
+        lbl_humidity.text = weatherViewModel.humidityText
+        lbl_rainChance.text = weatherViewModel.precipitationChance
+        lbl_wind.text = weatherViewModel.windSpeedText
+        
+        lbl_sunrise.text = weatherViewModel.sunriseText
+        lbl_sunset.text = weatherViewModel.sunsetText
+
     }
     
     private func showError(message: String) {
@@ -84,6 +113,28 @@ class ViewController: UIViewController {
         forecastDD.layer.borderColor = UIColor.black.cgColor
         forecastDD.layer.cornerRadius = 8
         forecastDD.clipsToBounds = true
+    }
+    // MARK: UI MODIFICATIONS
+    private func mainInfoUI(){
+        orangeBorder(view: mainInfo)
+        
+        temperatureView.layer.cornerRadius = 8
+        lbl_minTemp.layer.cornerRadius = 16
+        lbl_maxTemp.layer.cornerRadius = 16
+        
+        orangeBorder(view: detailsView)
+        orangeBorder(view: sunView)
+    }
+    // MARK: SEE WEATHER TIP ACTION
+    @IBAction func seeWeatherTip(_ sender: UIButton) {
+        let storyboard = UIStoryboard(name: "Main", bundle: nil)
+        let tipView = storyboard.instantiateViewController(withIdentifier: "WeatherTipVC") as! WeatherTipVC
+        
+        tipView.weatherTip = weatherViewModel.weatherTip
+        tipView.iconName = weatherViewModel.weatherIconName
+        tipView.title = "\(weatherViewModel.weatherDatePageTitle) - Weather Tip"
+
+        self.navigationController?.pushViewController(tipView, animated: true)
     }
 }
 // MARK: MAPS DATASOURCE AND DELEGATE
@@ -123,6 +174,8 @@ extension ViewController: UIPickerViewDataSource, UIPickerViewDelegate {
         weatherViewModel.selectedIndex = row
         showContent()
         pickerView.isHidden = true
+        
+        navigationItem.title = "Forecast: \(weatherViewModel.weatherDatePageTitle)"
     }
 }
 
