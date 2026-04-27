@@ -23,6 +23,8 @@ class ViewController: UIViewController {
     @IBOutlet weak var pickerView: UIPickerView!
     
     // Data UI Components
+    @IBOutlet weak var lbl_intervalForecast: UILabel!
+    
     @IBOutlet weak var icon_condition: UIImageView!
     @IBOutlet weak var lbl_city: UILabel!
     @IBOutlet weak var lbl_temp: UILabel!
@@ -58,7 +60,8 @@ class ViewController: UIViewController {
         bindViewModel()
         
     }
-    // MARK: Data Binding
+    
+    // MARK: - Data Binding
     private func bindViewModel() {
         weatherViewModel.onWeatherUpdate = { [weak self] in
             DispatchQueue.main.async {
@@ -72,9 +75,11 @@ class ViewController: UIViewController {
             }
         }
     }
-    // MARK: Passing of values
+    // MARK: - Passing of values
     private func showContent() {
         pickerView.reloadAllComponents()
+        
+        lbl_intervalForecast.text = "\(weatherViewModel.forecastIndexLabel)   \(weatherViewModel.forecastRangeText)"
         
         lbl_city.text = weatherViewModel.cityName
         lbl_temp.text = weatherViewModel.temperatureText
@@ -101,6 +106,18 @@ class ViewController: UIViewController {
         present(alert, animated: true)
     }
 
+    // MARK: - UI MODIFICATIONS
+    private func mainInfoUI(){
+        orangeBorder(view: mainInfo)
+        
+        temperatureView.layer.cornerRadius = 8
+        lbl_minTemp.layer.cornerRadius = 16
+        lbl_maxTemp.layer.cornerRadius = 16
+        
+        orangeBorder(view: detailsView)
+        orangeBorder(view: sunView)
+    }
+    
     // MARK: Dropdown Related UI
     @IBAction func dropdownTapped(_ sender: UIButton) {
         pickerView.isHidden.toggle()
@@ -114,18 +131,8 @@ class ViewController: UIViewController {
         forecastDD.layer.cornerRadius = 8
         forecastDD.clipsToBounds = true
     }
-    // MARK: UI MODIFICATIONS
-    private func mainInfoUI(){
-        orangeBorder(view: mainInfo)
-        
-        temperatureView.layer.cornerRadius = 8
-        lbl_minTemp.layer.cornerRadius = 16
-        lbl_maxTemp.layer.cornerRadius = 16
-        
-        orangeBorder(view: detailsView)
-        orangeBorder(view: sunView)
-    }
-    // MARK: SEE WEATHER TIP ACTION
+
+    // MARK: - SEE WEATHER TIP ACTION
     @IBAction func seeWeatherTip(_ sender: UIButton) {
         let storyboard = UIStoryboard(name: "Main", bundle: nil)
         let tipView = storyboard.instantiateViewController(withIdentifier: "WeatherTipVC") as! WeatherTipVC
@@ -133,11 +140,11 @@ class ViewController: UIViewController {
         tipView.weatherTip = weatherViewModel.weatherTip
         tipView.iconName = weatherViewModel.weatherIconName
         tipView.title = "\(weatherViewModel.weatherDatePageTitle) - Weather Tip"
-
+        tipView.hidesBottomBarWhenPushed = true
         self.navigationController?.pushViewController(tipView, animated: true)
     }
 }
-// MARK: MAPS DATASOURCE AND DELEGATE
+// MARK: - MAPS DATASOURCE AND DELEGATE
 extension ViewController: CLLocationManagerDelegate {
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         guard let location = locations.last else { return }
@@ -154,7 +161,7 @@ extension ViewController: CLLocationManagerDelegate {
     }
 }
 
-// MARK: DROPDOWN DATASOURCE AND DELEGATE
+// MARK: - DROPDOWN DATASOURCE AND DELEGATE
 extension ViewController: UIPickerViewDataSource, UIPickerViewDelegate {
     // Only needs one as I am only picking one, not like a date with many picks
     func numberOfComponents(in pickerView: UIPickerView) -> Int {

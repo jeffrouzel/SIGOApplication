@@ -42,7 +42,7 @@ class WeatherViewModel{
         }
     }
     
-    // MARK: HEAD DATA
+    // MARK: - HEAD DATA
     var cityName: String {
         weather?.city.name ?? ""
     }
@@ -61,7 +61,7 @@ class WeatherViewModel{
         return formatTime(weather.city.sunset, timezone: weather.city.timezone)
     }
     
-    // MARK: FOR WEATHER FORECAST LIST (up to 40 items, every 3hrs for 5 days)
+    // MARK: - FOR WEATHER FORECAST LIST (up to 40 items, every 3hrs for 5 days)
     
     var selectedIndex: Int = 0 {
         didSet {
@@ -122,7 +122,7 @@ class WeatherViewModel{
         return "\(threeHourRainData) mm"
     }
 
-    // MARK: Logic for WeatherIcons
+    // MARK: - Logic for WeatherIcons
 
     var isDay: Bool {
         guard let weather,
@@ -159,8 +159,24 @@ class WeatherViewModel{
         formatter.timeZone = TimeZone(secondsFromGMT: timezone)
         return formatter.string(from: date)
     }
+    // MARK: - DATA FOR Forecast Interval
+    var forecastIndexLabel: String {
+        selectedIndex < 6 ? "Today:" : "Forecast:"
+    }
+    var forecastRangeText: String {
+        guard let weather = weather,
+              let forecast = selectedForecast else { return "--:--" }
+
+        let start = formatTime(forecast.dt, timezone: weather.city.timezone)
+
+        let endDate = Date(timeIntervalSince1970: TimeInterval(forecast.dt + 3 * 3600))
+        let end = formatTime(Int(endDate.timeIntervalSince1970),
+                             timezone: weather.city.timezone)
+
+        return "\(start) - \(end)"
+    }
     
-    // MARK: FOR FORECAST DROPDOWN
+    // MARK: - FOR FORECAST DROPDOWN
     // Labels
     func labelForIndex(_ index: Int) -> String {
         if index == 0 { return "Current" }
@@ -181,7 +197,7 @@ class WeatherViewModel{
         guard let timelist = weather?.list else { return [] }
         return timelist.indices.map { labelForIndex($0) } // acts like (index in labelForIndex(index)) useful implementation to shorten code
     }
-    // MARK: LOGIC FOR WEATHER TIPS
+    // MARK: - LOGIC FOR WEATHER TIPS
     var weatherTip: String {
         guard let forecast = selectedForecast else { return "" }
 
@@ -237,7 +253,7 @@ class WeatherViewModel{
         
         let date = Date(timeIntervalSince1970: TimeInterval(forecast.dt))
         let formatter = DateFormatter()
-        formatter.dateFormat = "MM/dd/yyyy"
+        formatter.dateFormat = "MM/dd/YYYY"
         formatter.timeZone = TimeZone(secondsFromGMT: weather.city.timezone)
         
         return "\(formatter.string(from: date))"
