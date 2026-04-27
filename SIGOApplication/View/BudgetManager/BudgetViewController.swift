@@ -93,7 +93,7 @@ extension BudgetVC: UITableViewDataSource, UITableViewDelegate {
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         // Use a basic cell — or connect your own custom cell class
-        let cell = tableView.dequeueReusableCell(withIdentifier: "ExpenseCell", for: indexPath)
+        let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
         let expense = currentExpenses[indexPath.row]
 
         var config = cell.defaultContentConfiguration()

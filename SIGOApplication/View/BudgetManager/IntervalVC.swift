@@ -21,8 +21,8 @@ class IntervalVC: UIViewController {
         // Set date pickers to date-only mode
         startDatePicker.datePickerMode = .date
         endDatePicker.datePickerMode   = .date
-        // Default end date to one month from now
-        endDatePicker.date = Calendar.current.date(byAdding: .month, value: 1, to: Date()) ?? Date()
+        // Default end date to one week from now
+        endDatePicker.date = Calendar.current.date(byAdding: .day, value: 7, to: Date()) ?? Date()
     }
 
     // Connect this to your "Start Interval" button in storyboard
