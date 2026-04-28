@@ -31,7 +31,7 @@ class ExpenseVC: UIViewController {
         }
     }
 
-    // Connect this to your "+ Add Expense" button in storyboard
+    // MARK: ADD AN EXPENSE
     @IBAction func addExpenseTapped(_ sender: UIButton) {
         let amountText  = amountTextField.text ?? ""
         let detailsText = detailsTextField.text ?? ""

@@ -25,7 +25,7 @@ class IntervalVC: UIViewController {
         endDatePicker.date = Calendar.current.date(byAdding: .day, value: 7, to: Date()) ?? Date()
     }
 
-    // Connect this to your "Start Interval" button in storyboard
+    // MARK: CREATE AN INTERVAL
     @IBAction func startIntervalTapped(_ sender: UIButton) {
         let budgetText  = budgetTextField.text ?? ""
         let saveText    = savePercentageTextField.text ?? ""

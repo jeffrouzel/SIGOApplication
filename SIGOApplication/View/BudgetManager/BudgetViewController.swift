@@ -68,11 +68,11 @@ class BudgetVC: UIViewController {
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "toSetInterval",
            let dest = segue.destination as? IntervalVC {
-            dest.vm = budgetViewModel   // pass the same VM
+            dest.vm = budgetViewModel   // pass the same ViewModel
         }
         if segue.identifier == "toAddExpense",
            let dest = segue.destination as? ExpenseVC {
-            dest.vm = budgetViewModel   // pass the same VM
+            dest.vm = budgetViewModel   // pass the same ViewModel
         }
     }
     // MARK: THE NAVIGATION
