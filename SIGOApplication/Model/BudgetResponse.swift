@@ -19,11 +19,6 @@ struct Interval: Codable, Identifiable {
         let now = Date()
         return now >= startDate && now <= endDate
     }
-
-    // Should inputs be blocked? Yes, when an interval is active
-    var isLocked: Bool {
-        return isActive
-    }
 }
 
 // MARK: Expense Model

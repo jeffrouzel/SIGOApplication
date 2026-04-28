@@ -179,7 +179,7 @@ class WeatherViewModel{
     // MARK: - FOR FORECAST DROPDOWN
     // Labels
     func labelForIndex(_ index: Int) -> String {
-        if index == 0 { return "8:00 AM - Start of the Day" }
+        if index == 0 { return "Latest Available" }
         
         let totalHours = index * 3
         let days = totalHours / 24

@@ -58,10 +58,8 @@ final class BudgetViewModel {
 
     init() { load() }
 
-    // MARK: - Interval action
-    // VC passes raw text field values + date picker values here
-    // Returns nil on success, or an error string to show in an alert
-    @discardableResult
+// MARK: - SAVING ACTIONS
+    // MARK: Interval action
     func saveInterval(startDate: Date,
                       endDate: Date,
                       budgetText: String,
@@ -92,9 +90,7 @@ final class BudgetViewModel {
         return nil
     }
 
-    // MARK: - Expense action
-    // Returns nil on success, or an error string to show in an alert
-    @discardableResult
+    // MARK: Expense action
     func saveExpense(amountText: String, details: String) -> String? {
 
         guard let amount = Double(amountText), amount > 0 else {
@@ -123,7 +119,8 @@ final class BudgetViewModel {
         expenses.filter { $0.intervalID == interval.id }
     }
 
-    // MARK: - Persistence
+    // MARK: - Functions for Data Persistence
+    // save data every save of details
     private func save() {
         let encoder = JSONEncoder()
         if let encoded = try? encoder.encode(intervals) {
@@ -134,6 +131,7 @@ final class BudgetViewModel {
         }
     }
 
+    // load data every start of app
     private func load() {
         let decoder = JSONDecoder()
         if let data = defaults.data(forKey: intervalsKey),
