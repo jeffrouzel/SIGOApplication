@@ -23,7 +23,7 @@ final class BudgetViewModel {
 
     var totalSpent: Double {
         guard let current = currentInterval else { return 0 }
-        return expenses(for: current).reduce(0) { $0 + $1.amount }
+        return expenses(for: current).reduce(0) { $0 + $1.amount }  // starting from amount 0, each loop adds to the expense
     }
 
     var remaining: Double {
@@ -56,7 +56,8 @@ final class BudgetViewModel {
     private let intervalsKey = "saved_intervals"
     private let expensesKey  = "saved_expenses"
 
-    init() { load() }
+    // Load data whenever app launches
+    init() { loadData() }
 
 // MARK: - SAVING ACTIONS
     // MARK: Interval action
@@ -74,6 +75,7 @@ final class BudgetViewModel {
         guard endDate > startDate else {
             return "End date must be after start date."
         }
+        // Incase of accidental access to setting interval again
         guard !hasActiveInterval else {
             return "An interval is already active. Wait for it to end first."
         }
@@ -86,7 +88,7 @@ final class BudgetViewModel {
             savePercentage: savePct
         )
         intervals.append(interval)
-        save()
+        saveData()
         return nil
     }
 
@@ -111,17 +113,18 @@ final class BudgetViewModel {
             intervalID: active.id
         )
         expenses.append(expense)
-        save()
+        saveData()
         return nil
     }
 
+    // return only the expenses of the active interval
     func expenses(for interval: Interval) -> [Expense] {
         expenses.filter { $0.intervalID == interval.id }
     }
 
     // MARK: - Functions for Data Persistence
     // save data every save of details
-    private func save() {
+    private func saveData() {
         let encoder = JSONEncoder()
         if let encoded = try? encoder.encode(intervals) {
             defaults.set(encoded, forKey: intervalsKey)
@@ -132,7 +135,7 @@ final class BudgetViewModel {
     }
 
     // load data every start of app
-    private func load() {
+    private func loadData() {
         let decoder = JSONDecoder()
         if let data = defaults.data(forKey: intervalsKey),
            let decoded = try? decoder.decode([Interval].self, from: data) {

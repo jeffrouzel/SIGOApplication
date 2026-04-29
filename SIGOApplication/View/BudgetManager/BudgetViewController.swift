@@ -12,15 +12,19 @@ class BudgetVC: UIViewController {
     @IBOutlet weak var btn_goInterval: UIButton!
     @IBOutlet weak var btn_goExpense: UIButton!
     @IBOutlet weak var tableView: UITableView!
+    @IBOutlet weak var expensesSearchBar: UISearchBar!
     
     var budgetViewModel: BudgetViewModel = BudgetViewModel()
     
     private var currentExpenses: [Expense] = []
+    private var filteredExpenses: [Expense] = []
+    private var isSearching: Bool = false
     
     override func viewDidLoad() {
         super.viewDidLoad()
         tableView.dataSource = self
         tableView.delegate   = self
+        expensesSearchBar.delegate   = self
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -69,10 +73,12 @@ class BudgetVC: UIViewController {
         if segue.identifier == "toSetInterval",
            let dest = segue.destination as? IntervalVC {
             dest.vm = budgetViewModel   // pass the same ViewModel
+            dest.hidesBottomBarWhenPushed = true
         }
         if segue.identifier == "toAddExpense",
            let dest = segue.destination as? ExpenseVC {
             dest.vm = budgetViewModel   // pass the same ViewModel
+            dest.hidesBottomBarWhenPushed = true
         }
     }
     // MARK: THE NAVIGATION
@@ -84,22 +90,58 @@ class BudgetVC: UIViewController {
         performSegue(withIdentifier: "toAddExpense", sender: self)
     }
 }
-// MARK: - UITableViewDataSource & Delegate
+// MARK: - TABLEVIEW DataSource & Delegate
 extension BudgetVC: UITableViewDataSource, UITableViewDelegate {
+    // USE FILTERED IF SEARCHING ELSE ALL
+    private var activeExpenses: [Expense] {
+        isSearching ? filteredExpenses : currentExpenses
+    }
 
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        currentExpenses.count
+        activeExpenses.count
     }
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         // Use a basic cell — or connect your own custom cell class
         let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
-        let expense = currentExpenses[indexPath.row]
+        let expense = activeExpenses[indexPath.row]
 
         var config = cell.defaultContentConfiguration()
         config.text          = expense.details
         config.secondaryText = "₱\(String(format: "%.2f", expense.amount))"
         cell.contentConfiguration = config
+        
         return cell
+    }
+}
+// MARK: - SEARCH BAR Delegate
+extension BudgetVC: UISearchBarDelegate {
+
+    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+        if searchText.isEmpty {
+            isSearching = false
+            filteredExpenses = []
+        } else {
+            isSearching = true
+            // Filter by details or amount
+            filteredExpenses = currentExpenses.filter {
+                $0.details.lowercased().contains(searchText.lowercased()) || String($0.amount).contains(searchText)
+            }
+        }
+        tableView.reloadData()
+    }
+
+    // Clear search when cancel is tapped
+    func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
+        searchBar.text = ""
+        searchBar.resignFirstResponder()
+        isSearching = false
+        filteredExpenses = []
+        tableView.reloadData()
+    }
+
+    // Dismiss keyboard when search is tapped
+    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+        searchBar.resignFirstResponder()
     }
 }

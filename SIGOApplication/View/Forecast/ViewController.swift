@@ -133,15 +133,17 @@ class ViewController: UIViewController {
     }
 
     // MARK: - SEE WEATHER TIP ACTION
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if segue.identifier == "toWeatherTip",
+           let dest = segue.destination as? WeatherTipVC {
+            dest.weatherTip = weatherViewModel.weatherTip
+            dest.iconName = weatherViewModel.weatherIconName
+            dest.title = "\(weatherViewModel.weatherDatePageTitle) - Weather Tip"
+            dest.hidesBottomBarWhenPushed = true
+        }
+    }
     @IBAction func seeWeatherTip(_ sender: UIButton) {
-        let storyboard = UIStoryboard(name: "Main", bundle: nil)
-        let tipView = storyboard.instantiateViewController(withIdentifier: "WeatherTipVC") as! WeatherTipVC
-        
-        tipView.weatherTip = weatherViewModel.weatherTip
-        tipView.iconName = weatherViewModel.weatherIconName
-        tipView.title = "\(weatherViewModel.weatherDatePageTitle) - Weather Tip"
-        tipView.hidesBottomBarWhenPushed = true
-        self.navigationController?.pushViewController(tipView, animated: true)
+        performSegue(withIdentifier: "toWeatherTip", sender: self)
     }
 }
 // MARK: - MAPS DATASOURCE AND DELEGATE
