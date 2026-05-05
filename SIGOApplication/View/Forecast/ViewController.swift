@@ -18,13 +18,11 @@ class ViewController: UIViewController {
     @IBOutlet weak var sunView: UIView!
     
     // Dropdown UI Components
-    @IBOutlet weak var forecastDD: UIStackView!
     @IBOutlet weak var btn_dropdown: UIButton!
     @IBOutlet weak var pickerView: UIPickerView!
+    @IBOutlet weak var chevronIcon: UIImageView!
     
     // Data UI Components
-    @IBOutlet weak var lbl_intervalForecast: UILabel!
-    
     @IBOutlet weak var icon_condition: UIImageView!
     @IBOutlet weak var lbl_city: UILabel!
     @IBOutlet weak var lbl_temp: UILabel!
@@ -40,15 +38,15 @@ class ViewController: UIViewController {
     @IBOutlet weak var lbl_sunrise: UILabel!
     @IBOutlet weak var lbl_sunset: UILabel!
     
+    @IBOutlet weak var btn_weatherTip: UIButton!
+    
+    @IBOutlet var detailLabels: [UILabel]!
     var weatherViewModel: WeatherViewModel = WeatherViewModel()
     private let locationManager = CLLocationManager()
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        // UI modifications
-        mainInfoUI()
         // Dropdown
-        dropdownUI()
         pickerView.isHidden = true
         pickerView.delegate = self
         pickerView.dataSource = self
@@ -77,9 +75,8 @@ class ViewController: UIViewController {
     }
     // MARK: - Passing of values
     private func showContent() {
+        updateUI()
         pickerView.reloadAllComponents()
-        
-        lbl_intervalForecast.text = "\(weatherViewModel.forecastIndexLabel)   \(weatherViewModel.forecastRangeText)"
         
         lbl_city.text = weatherViewModel.cityName
         lbl_temp.text = weatherViewModel.temperatureText
@@ -107,31 +104,129 @@ class ViewController: UIViewController {
     }
 
     // MARK: - UI MODIFICATIONS
-    private func mainInfoUI(){
-        orangeBorder(view: mainInfo)
+    private func updateUI() {
+        setGradientBackground()
+        let isDay = weatherViewModel.isDay
+
+        // MARK: - Button Colors
+        // Main Info
+        mainInfoUI(isDay: isDay)
+        // Dropdown button
+        dropdownButtonUI(isDay: isDay)
         
-        temperatureView.layer.cornerRadius = 8
-        lbl_minTemp.layer.cornerRadius = 16
-        lbl_maxTemp.layer.cornerRadius = 16
-        
-        orangeBorder(view: detailsView)
-        orangeBorder(view: sunView)
+        // Weather Tip button
+        var tipConfig = btn_weatherTip.configuration
+        tipConfig?.baseBackgroundColor = isDay ? .systemOrange : UIColor(red: 0.0, green: 0.4, blue: 0.35, alpha: 1)
+        btn_weatherTip.configuration = tipConfig
+
+        // Detail labels
+        detailLabelColors(isDay: isDay)
+        // MARK: Sun Card
+//        sunView.backgroundColor = isDay
+//            ? UIColor.white.withAlphaComponent(0.85)
+//            : UIColor(red: 0.0, green: 0.35, blue: 0.3, alpha: 0.5)
+
+        // MARK: City Label
+        lbl_city.textColor = isDay ? .systemOrange : .white
     }
-    
+    // MARK: Main Info Related UI
+    private func mainInfoUI(isDay: Bool) {
+        styleAsCard(mainInfo)
+        styleAsCard(temperatureView)
+        styleAsCard(detailsView)
+        styleAsCard(sunView)
+
+        // Min/Max label pills
+        lbl_minTemp.layer.cornerRadius = 8
+        lbl_minTemp.clipsToBounds      = true
+        lbl_maxTemp.layer.cornerRadius = 8
+        lbl_maxTemp.clipsToBounds      = true
+        
+        lbl_city.textColor = isDay ? .systemOrange : .white
+        lbl_temp.textColor = isDay ? .systemOrange : UIColor(red: 0.0, green: 0.4, blue: 0.35, alpha: 1)
+        icon_condition.tintColor = isDay ? UIColor(red: 1.0, green: 0.8, blue: 0.6, alpha: 1) : .systemYellow
+    }
+    // MARK: LABEL
+    private func detailLabelColors(isDay:Bool){
+        detailLabels.forEach { $0.textColor = isDay ? .systemOrange : UIColor(red: 0.0, green: 0.4, blue: 0.35, alpha: 1) }
+        lbl_humidity.textColor = isDay ? .systemOrange : UIColor(red: 0.0, green: 0.4, blue: 0.35, alpha: 1)
+        lbl_rainChance.textColor = isDay ? .systemOrange : UIColor(red: 0.0, green: 0.4, blue: 0.35, alpha: 1)
+        lbl_wind.textColor = isDay ? .systemOrange : UIColor(red: 0.0, green: 0.4, blue: 0.35, alpha: 1)
+        lbl_sunrise.textColor = isDay ? .systemOrange : UIColor(red: 0.0, green: 0.4, blue: 0.35, alpha: 1)
+        lbl_sunset.textColor = isDay ? .systemOrange : UIColor(red: 0.0, green: 0.4, blue: 0.35, alpha: 1)
+        
+    }
     // MARK: Dropdown Related UI
     @IBAction func dropdownTapped(_ sender: UIButton) {
-        pickerView.isHidden.toggle()
+        let shouldShow = pickerView.isHidden
+
+        if shouldShow {
+            pickerView.isHidden = false
+            pickerView.alpha    = 0
+            chevronIcon.image = UIImage(systemName: "chevron.up")
+        }
+
+        UIView.animate(withDuration: 0.25) {
+            self.pickerView.alpha = shouldShow ? 1 : 0
+        } completion: { _ in
+            if !shouldShow {
+                self.pickerView.isHidden = true
+                self.chevronIcon.image = UIImage(systemName: "chevron.down")
+            }
+        }
+    }
+    private func dropdownButtonUI(isDay: Bool) {
+        var dd_config = btn_dropdown.configuration ?? UIButton.Configuration.filled()
         
-        btn_dropdown.configuration?.subtitle = pickerView.isHidden ? "Show forecast times" : "Select a forecast time"
+        dd_config.titleTextAttributesTransformer = UIConfigurationTextAttributesTransformer { attributes in
+            var updated = attributes
+            updated.font = UIFont.boldSystemFont(ofSize: 25)
+            return updated
+        }
+        
+        dd_config.subtitleTextAttributesTransformer = UIConfigurationTextAttributesTransformer { attributes in
+            var updated = attributes
+            updated.font = UIFont.systemFont(ofSize: 15, weight: .semibold)
+            return updated
+        }
+        
+        dd_config.baseBackgroundColor = isDay ? .systemOrange : UIColor(red: 0.0, green: 0.4, blue: 0.35, alpha: 1)
+        
+        dd_config.title = "\(weatherViewModel.forecastRangeText)"
+        dd_config.subtitle = "\(weatherViewModel.forecastIndexLabel) \(weatherViewModel.weatherDatePageTitle)"
+        btn_dropdown.configuration = dd_config
     }
     
-    private func dropdownUI(){
-        forecastDD.layer.borderWidth = 1
-        forecastDD.layer.borderColor = UIColor.black.cgColor
-        forecastDD.layer.cornerRadius = 8
-        forecastDD.clipsToBounds = true
-    }
+    private func setGradientBackground() {
+        view.layer.sublayers?.filter { $0 is CAGradientLayer }.forEach { $0.removeFromSuperlayer() }
 
+        let gradient = CAGradientLayer()
+        gradient.frame = view.bounds
+
+        if weatherViewModel.isDay {
+            // Warm colors for day
+            gradient.colors = [
+                UIColor.white.cgColor,
+                UIColor.systemOrange.cgColor
+            ]
+            [mainInfo, temperatureView, detailsView, sunView].forEach {
+                $0?.backgroundColor = UIColor.white.withAlphaComponent(0.85)
+            }
+        } else {
+            // Dark colors for night
+            gradient.colors = [
+                UIColor(red: 0.05, green: 0.05, blue: 0.15, alpha: 1).cgColor,
+                UIColor(red: 0.0, green: 0.4, blue: 0.35, alpha: 1).cgColor
+            ]
+            [mainInfo, temperatureView, detailsView, sunView].forEach {
+                $0?.backgroundColor = UIColor.white.withAlphaComponent(0.1)
+            }
+        }
+
+        gradient.startPoint = CGPoint(x: 0.5, y: 0)
+        gradient.endPoint   = CGPoint(x: 0.5, y: 1)
+        view.layer.insertSublayer(gradient, at: 0)
+    }
     // MARK: - SEE WEATHER TIP ACTION
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "toWeatherTip",
@@ -183,8 +278,6 @@ extension ViewController: UIPickerViewDataSource, UIPickerViewDelegate {
         weatherViewModel.selectedIndex = row
         showContent()
         pickerView.isHidden = true
-        
-        navigationItem.title = "Forecast: \(weatherViewModel.weatherDatePageTitle)"
     }
 }
 

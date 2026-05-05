@@ -21,7 +21,7 @@ class ExpenseVC: UIViewController {
     }
 
     private func updateRemainingLabel() {
-        lbl_remaining.text = "₱\(String(format: "%.0f", vm.remaining))"
+        lbl_remaining.text = "₱\(String(format: "%.2f", vm.remaining))"
 
         // Change color based on budget status
         switch vm.budgetStatus {

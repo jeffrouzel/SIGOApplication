@@ -11,6 +11,7 @@ class BudgetVC: UIViewController {
     @IBOutlet weak var budgetGauge: UILabel!
     @IBOutlet weak var btn_goInterval: UIButton!
     @IBOutlet weak var btn_goExpense: UIButton!
+    @IBOutlet weak var btn_goHistory: UIButton!
     @IBOutlet weak var tableView: UITableView!
     @IBOutlet weak var expensesSearchBar: UISearchBar!
     
@@ -57,27 +58,36 @@ class BudgetVC: UIViewController {
             
         case .onBudget:
             budgetGauge.backgroundColor = .systemGreen
-            budgetGauge.text = "Still on Budget!"
+            budgetGauge.text = "Still on Budget! (₱\(String(format: "%.0f", budgetViewModel.remaining)))"
             
         case .nearingLimit:
             budgetGauge.backgroundColor = .systemYellow
-            budgetGauge.text = "Nearing Limit!"
+            budgetGauge.text = "Nearing Limit! (₱\(String(format: "%.0f", budgetViewModel.remaining)))"
+            
+        case .onExactLimit:
+            budgetGauge.backgroundColor = .systemYellow
+            budgetGauge.text = "On Exact Limit! (₱\(String(format: "%.0f", budgetViewModel.remaining)))"
             
         case .overBudget:
             budgetGauge.backgroundColor = .systemRed
-            budgetGauge.text = "Over Budget!"
+            budgetGauge.text = "Over Budget! (₱\(String(format: "%.0f", budgetViewModel.remaining)))"
         }
     }
     // MARK: - Segue (the navigation)
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "toSetInterval",
            let dest = segue.destination as? IntervalVC {
-            dest.vm = budgetViewModel   // pass the same ViewModel
+            dest.vm = budgetViewModel
             dest.hidesBottomBarWhenPushed = true
         }
         if segue.identifier == "toAddExpense",
            let dest = segue.destination as? ExpenseVC {
-            dest.vm = budgetViewModel   // pass the same ViewModel
+            dest.vm = budgetViewModel
+            dest.hidesBottomBarWhenPushed = true
+        }
+        if segue.identifier == "toSeeHistory",
+           let dest = segue.destination as? HistoryVC {
+            dest.vm = budgetViewModel
             dest.hidesBottomBarWhenPushed = true
         }
     }
@@ -88,6 +98,9 @@ class BudgetVC: UIViewController {
 
     @IBAction func btn_goExpenseTapped(_ sender: UIButton) {
         performSegue(withIdentifier: "toAddExpense", sender: self)
+    }
+    @IBAction func btn_goHistoryTapped(_ sender: UIButton) {
+        performSegue(withIdentifier: "toSeeHistory", sender: self)
     }
 }
 // MARK: - TABLEVIEW DataSource & Delegate

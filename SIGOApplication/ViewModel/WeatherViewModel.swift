@@ -123,15 +123,6 @@ class WeatherViewModel{
     }
 
     // MARK: - Logic for WeatherIcons
-
-    var isDay: Bool {
-        guard let weather,
-              let dt = selectedForecast?.dt else { return true }
-        let current = dt + weather.city.timezone
-        return current >= weather.city.sunrise + weather.city.timezone &&
-        current < weather.city.sunset + weather.city.timezone
-    }
-
     var weatherIconName: String {
         let condition = selectedForecast?.weather.first?.main ?? "Clear"
         switch condition.lowercased() {
@@ -151,14 +142,6 @@ class WeatherViewModel{
             return "cloud.fill"
         }
     }
-    // MARK: Private helpers
-    private func formatTime(_ unix: Int, timezone: Int) -> String {
-        let date = Date(timeIntervalSince1970: TimeInterval(unix))
-        let formatter = DateFormatter()
-        formatter.dateFormat = "h:mm a"
-        formatter.timeZone = TimeZone(secondsFromGMT: timezone)
-        return formatter.string(from: date)
-    }
     // MARK: - DATA FOR Forecast Interval
     var forecastIndexLabel: String {
         selectedIndex < 6 ? "Today:" : "Forecast:"
@@ -168,10 +151,7 @@ class WeatherViewModel{
               let forecast = selectedForecast else { return "--:--" }
 
         let start = formatTime(forecast.dt, timezone: weather.city.timezone)
-
-        let endDate = Date(timeIntervalSince1970: TimeInterval(forecast.dt + 3 * 3600))
-        let end = formatTime(Int(endDate.timeIntervalSince1970),
-                             timezone: weather.city.timezone)
+        let end   = formatTime(forecast.dt + 3 * 3600, timezone: weather.city.timezone)
 
         return "\(start) - \(end)"
     }
@@ -250,13 +230,35 @@ class WeatherViewModel{
     var weatherDatePageTitle: String {
         guard let forecast = selectedForecast,
               let weather = weather else { return "Weather Tip" }
-        
+        return formatDate(forecast.dt, timezone: weather.city.timezone)
+    }
+    
+    // MARK: - Private time helpers
+    var isDay: Bool {
+        guard let forecast = selectedForecast else { return true }
+        guard let timezone = weather?.city.timezone else { return true }
+
         let date = Date(timeIntervalSince1970: TimeInterval(forecast.dt))
-        let formatter = DateFormatter()
-        formatter.dateFormat = "MM/dd/YYYY"
-        formatter.timeZone = TimeZone(secondsFromGMT: weather.city.timezone)
         
-        return "\(formatter.string(from: date))"
+        var calendar = Calendar.current
+        calendar.timeZone = TimeZone(secondsFromGMT: timezone) ?? .current
+        
+        let hour = calendar.component(.hour, from: date)
+        return hour >= 6 && hour < 18
+    }
+    private func formatTime(_ unix: Int, timezone: Int) -> String {
+        let date = Date(timeIntervalSince1970: TimeInterval(unix))
+        let formatter = DateFormatter()
+        formatter.dateFormat = "h:mm a"
+        formatter.timeZone = TimeZone(secondsFromGMT: timezone)
+        return formatter.string(from: date)
+    }
+    private func formatDate(_ unix: Int, timezone: Int) -> String {
+        let date = Date(timeIntervalSince1970: TimeInterval(unix))
+        let formatter = DateFormatter()
+        formatter.dateFormat = "MM/dd/yyyy"
+        formatter.timeZone = TimeZone(secondsFromGMT: timezone)
+        return formatter.string(from: date)
     }
 }
 

@@ -41,6 +41,7 @@ final class BudgetViewModel {
         guard hasActiveInterval else { return .noInterval }
         if remaining <= 0 { return .overBudget }
         else if remaining <= saveThreshold { return .nearingLimit }
+        else if remaining == saveThreshold { return .onExactLimit }
         else { return .onBudget }
     }
 
@@ -48,6 +49,7 @@ final class BudgetViewModel {
         case noInterval
         case onBudget
         case nearingLimit
+        case onExactLimit
         case overBudget
     }
 
