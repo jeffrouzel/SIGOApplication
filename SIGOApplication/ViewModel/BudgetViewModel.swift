@@ -7,18 +7,117 @@
 import Foundation
 
 final class BudgetViewModel {
-
     // MARK: - Data
     private(set) var intervals: [Interval] = []
     private(set) var expenses: [Expense] = []
+    
+    // MARK: - UserDefaults keys
+        private let defaults = UserDefaults.standard
+        private let intervalsKey = "saved_intervals"
+        private let expensesKey  = "saved_expenses"
 
-    // MARK: - Computed helpers (VCs read these to update UI)
+        // Load data whenever app launches
+        init() { loadData() }
+
+    // MARK: - SAVING ACTIONS
+        // MARK: Interval action
+        func saveInterval(startDate: Date,
+                          endDate: Date,
+                          budgetText: String,
+                          savePercentageText: String) -> String? {
+
+            guard let budget = Double(budgetText), budget > 0 else {
+                return "Please enter a valid budget amount."
+            }
+            guard let savePct = Double(savePercentageText), savePct >= 0, savePct <= 100 else {
+                return "Please enter a valid save percentage (0–100)."
+            }
+            guard endDate > startDate else {
+                return "End date must be after start date."
+            }
+            // Incase of accidental access to setting interval again
+            guard !hasActiveInterval else {
+                return "An interval is already active. Wait for it to end first."
+            }
+
+            let interval = Interval(
+                id: UUID(),
+                startDate: startDate,
+                endDate: endDate,
+                budget: budget,
+                savePercentage: savePct
+            )
+            intervals.append(interval)
+            saveData()
+            return nil
+        }
+
+        // MARK: Expense action
+        func saveExpense(amountText: String, details: String) -> String? {
+
+            guard let amount = Double(amountText), amount > 0 else {
+                return "Please enter a valid amount."
+            }
+            guard !details.trimmingCharacters(in: .whitespaces).isEmpty else {
+                return "Please enter expense details."
+            }
+            guard let active = currentInterval else {
+                return "No active interval. Create one first."
+            }
+
+            let expense = Expense(
+                id: UUID(),
+                amount: amount,
+                details: details,
+                date: Date(),
+                intervalID: active.id
+            )
+            expenses.append(expense)
+            saveData()
+            return nil
+        }
+
+        // return only the expenses of the active interval
+        func expenses(for interval: Interval) -> [Expense] {
+            expenses.filter { $0.intervalID == interval.id }
+        }
+
+        // MARK: - Functions for Data Persistence
+        // save data every save of details
+        private func saveData() {
+            let encoder = JSONEncoder()
+            if let encoded = try? encoder.encode(intervals) {
+                defaults.set(encoded, forKey: intervalsKey)
+            }
+            if let encoded = try? encoder.encode(expenses) {
+                defaults.set(encoded, forKey: expensesKey)
+            }
+        }
+
+        // load data every start of app
+        private func loadData() {
+            let decoder = JSONDecoder()
+            if let data = defaults.data(forKey: intervalsKey),
+               let decoded = try? decoder.decode([Interval].self, from: data) {
+                intervals = decoded
+            }
+            if let data = defaults.data(forKey: expensesKey),
+               let decoded = try? decoder.decode([Expense].self, from: data) {
+                expenses = decoded
+            }
+        }
+    // MARK: - UI RELATED
     var hasActiveInterval: Bool {
         intervals.contains { $0.isActive }
     }
 
     var currentInterval: Interval? {
         intervals.first { $0.isActive }
+    }
+    
+    var totalBudget: Double {
+        guard let current = currentInterval else { return 0 }
+        return current.budget
     }
 
     var totalSpent: Double {
@@ -52,100 +151,9 @@ final class BudgetViewModel {
         case onExactLimit
         case overBudget
     }
-
-    // MARK: - UserDefaults keys
-    private let defaults = UserDefaults.standard
-    private let intervalsKey = "saved_intervals"
-    private let expensesKey  = "saved_expenses"
-
-    // Load data whenever app launches
-    init() { loadData() }
-
-// MARK: - SAVING ACTIONS
-    // MARK: Interval action
-    func saveInterval(startDate: Date,
-                      endDate: Date,
-                      budgetText: String,
-                      savePercentageText: String) -> String? {
-
-        guard let budget = Double(budgetText), budget > 0 else {
-            return "Please enter a valid budget amount."
-        }
-        guard let savePct = Double(savePercentageText), savePct >= 0, savePct <= 100 else {
-            return "Please enter a valid save percentage (0–100)."
-        }
-        guard endDate > startDate else {
-            return "End date must be after start date."
-        }
-        // Incase of accidental access to setting interval again
-        guard !hasActiveInterval else {
-            return "An interval is already active. Wait for it to end first."
-        }
-
-        let interval = Interval(
-            id: UUID(),
-            startDate: startDate,
-            endDate: endDate,
-            budget: budget,
-            savePercentage: savePct
-        )
-        intervals.append(interval)
-        saveData()
-        return nil
-    }
-
-    // MARK: Expense action
-    func saveExpense(amountText: String, details: String) -> String? {
-
-        guard let amount = Double(amountText), amount > 0 else {
-            return "Please enter a valid amount."
-        }
-        guard !details.trimmingCharacters(in: .whitespaces).isEmpty else {
-            return "Please enter expense details."
-        }
-        guard let active = currentInterval else {
-            return "No active interval. Create one first."
-        }
-
-        let expense = Expense(
-            id: UUID(),
-            amount: amount,
-            details: details,
-            date: Date(),
-            intervalID: active.id
-        )
-        expenses.append(expense)
-        saveData()
-        return nil
-    }
-
-    // return only the expenses of the active interval
-    func expenses(for interval: Interval) -> [Expense] {
-        expenses.filter { $0.intervalID == interval.id }
-    }
-
-    // MARK: - Functions for Data Persistence
-    // save data every save of details
-    private func saveData() {
-        let encoder = JSONEncoder()
-        if let encoded = try? encoder.encode(intervals) {
-            defaults.set(encoded, forKey: intervalsKey)
-        }
-        if let encoded = try? encoder.encode(expenses) {
-            defaults.set(encoded, forKey: expensesKey)
-        }
-    }
-
-    // load data every start of app
-    private func loadData() {
-        let decoder = JSONDecoder()
-        if let data = defaults.data(forKey: intervalsKey),
-           let decoded = try? decoder.decode([Interval].self, from: data) {
-            intervals = decoded
-        }
-        if let data = defaults.data(forKey: expensesKey),
-           let decoded = try? decoder.decode([Expense].self, from: data) {
-            expenses = decoded
-        }
+    
+    var intervalDateRangeText: String {
+        guard let current = currentInterval else { return "No Active Interval" }
+        return formatDateRangeText(startDate: current.startDate, endDate: current.endDate)
     }
 }

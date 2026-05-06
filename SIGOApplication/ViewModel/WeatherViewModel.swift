@@ -42,26 +42,22 @@ class WeatherViewModel{
         }
     }
     
+    // MARK: - UI RELATED
+    // MARK: NIGHT/DAY SETTER
+    var isDay: Bool {
+        guard let forecast = selectedForecast else { return true }
+        guard let timezone = weather?.city.timezone else { return true }
+        return isDayTime(unix: forecast.dt, timezone: timezone)
+    }
     // MARK: - HEAD DATA
     var cityName: String {
         weather?.city.name ?? ""
     }
 
-    var countryName: String {
-        weather?.city.country ?? ""
-    }
-    
-    var sunriseText: String {
-        guard let weather else { return "--:--" }
-        return formatTime(weather.city.sunrise, timezone: weather.city.timezone)
-    }
-
-    var sunsetText: String {
-        guard let weather else { return "--:--" }
-        return formatTime(weather.city.sunset, timezone: weather.city.timezone)
-    }
-    
-    // MARK: - FOR WEATHER FORECAST LIST (up to 40 items, every 3hrs for 5 days)
+//    var countryName: String {
+//        weather?.city.country ?? ""
+//    }
+    // MARK: - FOR WEATHER FORECAST LIST (up to 40 items, every 3 hrs interval for 5 days)
     
     var selectedIndex: Int = 0 {
         didSet {
@@ -75,7 +71,8 @@ class WeatherViewModel{
     private var selectedForecast: ForecastItem? {
         weather?.list[selectedIndex]
     }
-    // MARK: FORECAST DATA
+    
+    // MARK: FORECAST DATA (MAIN)
     // Main items
     var temperatureText: String {
         guard let temp = selectedForecast?.main.temp else { return "--°C" }
@@ -97,30 +94,44 @@ class WeatherViewModel{
         return "Max: \(Int(maxTemp.rounded()))°C"
     }
     
+    // MARK: FORECAST DATA (DETAILS)
+    // Humidity
     var humidityText: String {
         guard let humidity = selectedForecast?.main.humidity else { return "--" }
         return "\(humidity)%"
-    }
-    
-    var windSpeedText: String {
-        guard let windSpeed = selectedForecast?.wind.speed else { return "--" }
-        return "\(Int(windSpeed.rounded())) km/h"
-    }
-    
-    // Weather Items
-    var conditionText: String {
-        selectedForecast?.weather.first?.description.capitalized ?? "Unknown"
     }
     // Rain Related
     var precipitationChance: String {
         guard let pop = selectedForecast?.pop else { return "--" }
         return "\(Int((pop * 100).rounded()))%"
     }
-    
-    var rainDropSize: String? {
-        guard let threeHourRainData = selectedForecast?.rain else { return "--" }
-        return "\(threeHourRainData) mm"
+    // Wind
+    var windSpeedText: String {
+        guard let windSpeed = selectedForecast?.wind.speed else { return "--" }
+        return "\(Int(windSpeed.rounded())) km/h"
     }
+    
+    
+    
+    var sunriseText: String {
+        guard let weather else { return "--:--" }
+        return formatTime(weather.city.sunrise, timezone: weather.city.timezone)
+    }
+
+    var sunsetText: String {
+        guard let weather else { return "--:--" }
+        return formatTime(weather.city.sunset, timezone: weather.city.timezone)
+    }
+    // Weather Items
+//    var conditionText: String {
+//        selectedForecast?.weather.first?.description.capitalized ?? "Unknown"
+//    }
+    
+    
+//    var rainDropSize: String? {
+//        guard let threeHourRainData = selectedForecast?.rain else { return "--" }
+//        return "\(threeHourRainData) mm"
+//    }
 
     // MARK: - Logic for WeatherIcons
     var weatherIconName: String {
@@ -158,7 +169,7 @@ class WeatherViewModel{
     
     // MARK: - FOR FORECAST DROPDOWN
     // Labels
-    func labelForIndex(_ index: Int) -> String {
+    func labelForIndexDD(_ index: Int) -> String {
         if index == 0 { return "Latest Available" }
         
         let totalHours = index * 3
@@ -175,7 +186,7 @@ class WeatherViewModel{
     // Array of the labels
     var forecastLabels: [String] {
         guard let timelist = weather?.list else { return [] }
-        return timelist.indices.map { labelForIndex($0) } // acts like (index in labelForIndex(index)) useful implementation to shorten code
+        return timelist.indices.map { labelForIndexDD($0) } // acts like (index in labelForIndex(index)) useful implementation to shorten code
     }
     // MARK: - LOGIC FOR WEATHER TIPS
     var weatherTip: String {
@@ -231,34 +242,6 @@ class WeatherViewModel{
         guard let forecast = selectedForecast,
               let weather = weather else { return "Weather Tip" }
         return formatDate(forecast.dt, timezone: weather.city.timezone)
-    }
-    
-    // MARK: - Private time helpers
-    var isDay: Bool {
-        guard let forecast = selectedForecast else { return true }
-        guard let timezone = weather?.city.timezone else { return true }
-
-        let date = Date(timeIntervalSince1970: TimeInterval(forecast.dt))
-        
-        var calendar = Calendar.current
-        calendar.timeZone = TimeZone(secondsFromGMT: timezone) ?? .current
-        
-        let hour = calendar.component(.hour, from: date)
-        return hour >= 6 && hour < 18
-    }
-    private func formatTime(_ unix: Int, timezone: Int) -> String {
-        let date = Date(timeIntervalSince1970: TimeInterval(unix))
-        let formatter = DateFormatter()
-        formatter.dateFormat = "h:mm a"
-        formatter.timeZone = TimeZone(secondsFromGMT: timezone)
-        return formatter.string(from: date)
-    }
-    private func formatDate(_ unix: Int, timezone: Int) -> String {
-        let date = Date(timeIntervalSince1970: TimeInterval(unix))
-        let formatter = DateFormatter()
-        formatter.dateFormat = "MM/dd/yyyy"
-        formatter.timeZone = TimeZone(secondsFromGMT: timezone)
-        return formatter.string(from: date)
     }
 }
 

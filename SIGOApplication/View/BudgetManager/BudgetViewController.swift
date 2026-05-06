@@ -8,6 +8,8 @@ import UIKit
 
 class BudgetVC: UIViewController {
     
+    @IBOutlet weak var intervalView: UIView!
+    @IBOutlet weak var expenseslistView: UIView!
     @IBOutlet weak var budgetGauge: UILabel!
     @IBOutlet weak var btn_goInterval: UIButton!
     @IBOutlet weak var btn_goExpense: UIButton!
@@ -15,6 +17,9 @@ class BudgetVC: UIViewController {
     @IBOutlet weak var tableView: UITableView!
     @IBOutlet weak var expensesSearchBar: UISearchBar!
     
+    @IBOutlet weak var lbl_totalBudget: UILabel!
+    @IBOutlet weak var lbl_percentageUsed: UILabel!
+    @IBOutlet weak var lbl_intervalDate: UILabel!
     var budgetViewModel: BudgetViewModel = BudgetViewModel()
     
     private var currentExpenses: [Expense] = []
@@ -30,11 +35,13 @@ class BudgetVC: UIViewController {
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        updateUI()
+        showContent()
     }
     
     // MARK: - UI RELATED
-    private func updateUI() {
+    private func showContent() {
+        view.setGradientBackground(isDay: true)
+        
         // Reload expenses for the current interval
         if let current = budgetViewModel.currentInterval {
             currentExpenses = budgetViewModel.expenses(for: current).sorted { $0.date > $1.date }
@@ -42,6 +49,13 @@ class BudgetVC: UIViewController {
             currentExpenses = []
         }
         tableView.reloadData()
+        intervalView.styleAsCardOrange()
+        expenseslistView.styleAsCard()
+        expensesSearchBar.styleRounded()
+        
+        lbl_totalBudget.text = "Budget: \(budgetViewModel.totalBudget)"
+        lbl_percentageUsed.text = "\(Int(budgetViewModel.totalSpent/budgetViewModel.totalBudget * 100))%"
+        lbl_intervalDate.text = budgetViewModel.intervalDateRangeText
 
         // MARK: BUTTON STATES
         btn_goInterval.isEnabled = !budgetViewModel.hasActiveInterval
@@ -58,19 +72,19 @@ class BudgetVC: UIViewController {
             
         case .onBudget:
             budgetGauge.backgroundColor = .systemGreen
-            budgetGauge.text = "Still on Budget! (₱\(String(format: "%.0f", budgetViewModel.remaining)))"
+            budgetGauge.text = "Still on Budget!"
             
         case .nearingLimit:
             budgetGauge.backgroundColor = .systemYellow
-            budgetGauge.text = "Nearing Limit! (₱\(String(format: "%.0f", budgetViewModel.remaining)))"
+            budgetGauge.text = "Nearing Limit!"
             
         case .onExactLimit:
             budgetGauge.backgroundColor = .systemYellow
-            budgetGauge.text = "On Exact Limit! (₱\(String(format: "%.0f", budgetViewModel.remaining)))"
+            budgetGauge.text = "On Exact Limit!"
             
         case .overBudget:
             budgetGauge.backgroundColor = .systemRed
-            budgetGauge.text = "Over Budget! (₱\(String(format: "%.0f", budgetViewModel.remaining)))"
+            budgetGauge.text = "Over Budget!"
         }
     }
     // MARK: - Segue (the navigation)

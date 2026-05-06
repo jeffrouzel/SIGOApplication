@@ -73,11 +73,13 @@ class ViewController: UIViewController {
             }
         }
     }
-    // MARK: - Passing of values
+// MARK: - Passing of values
     private func showContent() {
+        // UI
         updateUI()
         pickerView.reloadAllComponents()
         
+        // pass on values
         lbl_city.text = weatherViewModel.cityName
         lbl_temp.text = weatherViewModel.temperatureText
         lbl_feelslike.text = weatherViewModel.feelsLikeText
@@ -103,38 +105,42 @@ class ViewController: UIViewController {
         present(alert, animated: true)
     }
 
-    // MARK: - UI MODIFICATIONS
+// MARK: - UI MODIFICATIONS
     private func updateUI() {
-        setGradientBackground()
         let isDay = weatherViewModel.isDay
+        setCardsnBackground()
 
-        // MARK: - Button Colors
         // Main Info
         mainInfoUI(isDay: isDay)
         // Dropdown button
         dropdownButtonUI(isDay: isDay)
+        // Detail labels
+        detailLabelColors(isDay: isDay)
         
         // Weather Tip button
         var tipConfig = btn_weatherTip.configuration
         tipConfig?.baseBackgroundColor = isDay ? .systemOrange : UIColor(red: 0.0, green: 0.4, blue: 0.35, alpha: 1)
         btn_weatherTip.configuration = tipConfig
-
-        // Detail labels
-        detailLabelColors(isDay: isDay)
-        // MARK: Sun Card
-//        sunView.backgroundColor = isDay
-//            ? UIColor.white.withAlphaComponent(0.85)
-//            : UIColor(red: 0.0, green: 0.35, blue: 0.3, alpha: 0.5)
-
-        // MARK: City Label
-        lbl_city.textColor = isDay ? .systemOrange : .white
     }
-    // MARK: Main Info Related UI
+    private func setCardsnBackground() {
+        let isDay = weatherViewModel.isDay
+        view.setGradientBackground(isDay: isDay)
+
+        // Card colors stay here since they're specific to this screen
+        let cardColor = isDay
+            ? UIColor.white.withAlphaComponent(0.85)
+            : UIColor.white.withAlphaComponent(0.1)
+
+        [mainInfo, temperatureView, detailsView, sunView].forEach {
+            $0?.backgroundColor = cardColor
+        }
+    }
+// MARK: - Main Info Related UI
     private func mainInfoUI(isDay: Bool) {
-        styleAsCard(mainInfo)
-        styleAsCard(temperatureView)
-        styleAsCard(detailsView)
-        styleAsCard(sunView)
+        mainInfo.styleAsCard()
+        temperatureView.styleAsCard()
+        detailsView.styleAsCard()
+        sunView.styleAsCard()
 
         // Min/Max label pills
         lbl_minTemp.layer.cornerRadius = 8
@@ -142,11 +148,12 @@ class ViewController: UIViewController {
         lbl_maxTemp.layer.cornerRadius = 8
         lbl_maxTemp.clipsToBounds      = true
         
+        // Labels (Main Info)
         lbl_city.textColor = isDay ? .systemOrange : .white
         lbl_temp.textColor = isDay ? .systemOrange : UIColor(red: 0.0, green: 0.4, blue: 0.35, alpha: 1)
         icon_condition.tintColor = isDay ? UIColor(red: 1.0, green: 0.8, blue: 0.6, alpha: 1) : .systemYellow
     }
-    // MARK: LABEL
+// MARK: - LABEL (Details Info)
     private func detailLabelColors(isDay:Bool){
         detailLabels.forEach { $0.textColor = isDay ? .systemOrange : UIColor(red: 0.0, green: 0.4, blue: 0.35, alpha: 1) }
         lbl_humidity.textColor = isDay ? .systemOrange : UIColor(red: 0.0, green: 0.4, blue: 0.35, alpha: 1)
@@ -156,25 +163,7 @@ class ViewController: UIViewController {
         lbl_sunset.textColor = isDay ? .systemOrange : UIColor(red: 0.0, green: 0.4, blue: 0.35, alpha: 1)
         
     }
-    // MARK: Dropdown Related UI
-    @IBAction func dropdownTapped(_ sender: UIButton) {
-        let shouldShow = pickerView.isHidden
-
-        if shouldShow {
-            pickerView.isHidden = false
-            pickerView.alpha    = 0
-            chevronIcon.image = UIImage(systemName: "chevron.up")
-        }
-
-        UIView.animate(withDuration: 0.25) {
-            self.pickerView.alpha = shouldShow ? 1 : 0
-        } completion: { _ in
-            if !shouldShow {
-                self.pickerView.isHidden = true
-                self.chevronIcon.image = UIImage(systemName: "chevron.down")
-            }
-        }
-    }
+// MARK: - Dropdown Related UI
     private func dropdownButtonUI(isDay: Bool) {
         var dd_config = btn_dropdown.configuration ?? UIButton.Configuration.filled()
         
@@ -197,40 +186,30 @@ class ViewController: UIViewController {
         btn_dropdown.configuration = dd_config
     }
     
-    private func setGradientBackground() {
-        view.layer.sublayers?.filter { $0 is CAGradientLayer }.forEach { $0.removeFromSuperlayer() }
+        // MARK: Dropdown Button Action
+    @IBAction func dropdownTapped(_ sender: UIButton) {
+        let shouldShow = pickerView.isHidden
 
-        let gradient = CAGradientLayer()
-        gradient.frame = view.bounds
-
-        if weatherViewModel.isDay {
-            // Warm colors for day
-            gradient.colors = [
-                UIColor.white.cgColor,
-                UIColor.systemOrange.cgColor
-            ]
-            [mainInfo, temperatureView, detailsView, sunView].forEach {
-                $0?.backgroundColor = UIColor.white.withAlphaComponent(0.85)
-            }
-        } else {
-            // Dark colors for night
-            gradient.colors = [
-                UIColor(red: 0.05, green: 0.05, blue: 0.15, alpha: 1).cgColor,
-                UIColor(red: 0.0, green: 0.4, blue: 0.35, alpha: 1).cgColor
-            ]
-            [mainInfo, temperatureView, detailsView, sunView].forEach {
-                $0?.backgroundColor = UIColor.white.withAlphaComponent(0.1)
-            }
+        if shouldShow {
+            pickerView.isHidden = false
+            pickerView.alpha    = 0
+            chevronIcon.image = UIImage(systemName: "chevron.up")
         }
 
-        gradient.startPoint = CGPoint(x: 0.5, y: 0)
-        gradient.endPoint   = CGPoint(x: 0.5, y: 1)
-        view.layer.insertSublayer(gradient, at: 0)
+        UIView.animate(withDuration: 0.25) {
+            self.pickerView.alpha = shouldShow ? 1 : 0
+        } completion: { _ in
+            if !shouldShow {
+                self.pickerView.isHidden = true
+                self.chevronIcon.image = UIImage(systemName: "chevron.down")
+            }
+        }
     }
-    // MARK: - SEE WEATHER TIP ACTION
+    // MARK: - NAVIGATION (SEE WEATHER TIP ACTION)
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "toWeatherTip",
            let dest = segue.destination as? WeatherTipVC {
+            dest.isDay      = weatherViewModel.isDay
             dest.weatherTip = weatherViewModel.weatherTip
             dest.iconName = weatherViewModel.weatherIconName
             dest.title = "\(weatherViewModel.weatherDatePageTitle) - Weather Tip"
