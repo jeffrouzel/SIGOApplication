@@ -121,6 +121,7 @@ class ViewController: UIViewController {
         var tipConfig = btn_weatherTip.configuration
         tipConfig?.baseBackgroundColor = isDay ? .systemOrange : UIColor(red: 0.0, green: 0.4, blue: 0.35, alpha: 1)
         btn_weatherTip.configuration = tipConfig
+        btn_weatherTip.styleAsFloatingButton()
     }
     private func setCardsnBackground() {
         let isDay = weatherViewModel.isDay
@@ -212,7 +213,6 @@ class ViewController: UIViewController {
             dest.isDay      = weatherViewModel.isDay
             dest.weatherTip = weatherViewModel.weatherTip
             dest.iconName = weatherViewModel.weatherIconName
-            dest.title = "\(weatherViewModel.weatherDatePageTitle) - Weather Tip"
             dest.hidesBottomBarWhenPushed = true
         }
     }
@@ -257,6 +257,7 @@ extension ViewController: UIPickerViewDataSource, UIPickerViewDelegate {
         weatherViewModel.selectedIndex = row
         showContent()
         pickerView.isHidden = true
+        self.chevronIcon.image = UIImage(systemName: "chevron.down")
     }
 }
 

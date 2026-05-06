@@ -32,6 +32,15 @@ extension UIView {
         layer.shadowRadius  = 8
         clipsToBounds       = false
     }
+    func styleAsFloatingButton() {
+        layer.shadowColor   = UIColor.black.cgColor
+        layer.shadowOpacity = 0.15
+        layer.shadowOffset  = CGSize(width: 0, height: 4)
+        layer.shadowRadius  = 8
+        layer.borderWidth    = 1.5
+        layer.borderColor    = UIColor.white.withAlphaComponent(0.6).cgColor
+        clipsToBounds       = false
+    }
     func setGradientBackground(isDay: Bool) {
         layer.sublayers?.filter { $0 is CAGradientLayer }.forEach { $0.removeFromSuperlayer() }
 

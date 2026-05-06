@@ -52,9 +52,11 @@ class BudgetVC: UIViewController {
         intervalView.styleAsCardOrange()
         expenseslistView.styleAsCard()
         expensesSearchBar.styleRounded()
+        btn_goInterval.styleAsFloatingButton()
+        btn_goExpense.styleAsFloatingButton()
         
-        lbl_totalBudget.text = "Budget: \(budgetViewModel.totalBudget)"
-        lbl_percentageUsed.text = "\(Int(budgetViewModel.totalSpent/budgetViewModel.totalBudget * 100))%"
+        lbl_totalBudget.text = "₱\(String(format: "%.2f", budgetViewModel.remaining)) left"
+        lbl_percentageUsed.text = "\(Int(budgetViewModel.totalSpent/budgetViewModel.totalBudget * 100))% Used"
         lbl_intervalDate.text = budgetViewModel.intervalDateRangeText
 
         // MARK: BUTTON STATES
@@ -65,6 +67,9 @@ class BudgetVC: UIViewController {
         btn_goExpense.alpha      = budgetViewModel.hasActiveInterval ? 1.0 : 0.5
 
         // MARK: GAUGE BANNER STATES
+        budgetGauge.layer.cornerRadius = 10
+        budgetGauge.clipsToBounds      = true
+        
         switch budgetViewModel.budgetStatus {
         case .noInterval:
             budgetGauge.backgroundColor = .systemGray

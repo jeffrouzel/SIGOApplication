@@ -28,6 +28,8 @@ class WeatherTipVC: UIViewController {
         tipView.styleAsCard()
         
         header.backgroundColor    = isDay ? .systemOrange : UIColor(red: 0.0, green: 0.4, blue: 0.35, alpha: 1)
+        header.layer.cornerRadius = 10
+        header.clipsToBounds      = true
         
         icon_weather.tintColor = isDay ? .systemOrange : .systemYellow
         
