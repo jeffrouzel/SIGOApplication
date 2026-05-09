@@ -11,7 +11,8 @@ struct Interval: Codable, Identifiable {
     let id: UUID
     var startDate: Date
     var endDate: Date
-    var budget: Double
+    var inputBudget: Double
+    var totalBudget: Double
     var savePercentage: Double
 
     // Is the interval currently running right now?

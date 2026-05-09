@@ -7,15 +7,17 @@
 import UIKit
 
 extension UIView {
-    func orangeBorder(){
-        layer.borderWidth = 1
-        layer.borderColor = UIColor.orange.cgColor
-        layer.cornerRadius = 8
-        clipsToBounds = true
-    }
-
     func styleAsCard() {
         backgroundColor     = UIColor.white.withAlphaComponent(0.85)
+        layer.cornerRadius  = 16
+        layer.shadowColor   = UIColor.black.cgColor
+        layer.shadowOpacity = 0.08
+        layer.shadowOffset  = CGSize(width: 0, height: 4)
+        layer.shadowRadius  = 8
+        clipsToBounds       = false
+    }
+    func styleAsCardLightOrange(){
+        backgroundColor     = .systemOrange.withAlphaComponent(0.15)
         layer.cornerRadius  = 16
         layer.shadowColor   = UIColor.black.cgColor
         layer.shadowOpacity = 0.08
@@ -64,6 +66,11 @@ extension UIView {
         gradient.startPoint = CGPoint(x: 0.5, y: 0)
         gradient.endPoint   = CGPoint(x: 0.5, y: 1)
         layer.insertSublayer(gradient, at: 0)
+    }
+    func styleAsCircleLabelLightOrange(color: UIColor = .systemOrange) {
+        backgroundColor     = color.withAlphaComponent(0.50)
+        layer.cornerRadius  = frame.height / 2
+        clipsToBounds       = true
     }
 }
 extension UISearchBar {

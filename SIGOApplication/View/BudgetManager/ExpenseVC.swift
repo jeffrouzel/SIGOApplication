@@ -26,7 +26,7 @@ class ExpenseVC: UIViewController {
         // Change color based on budget status
         switch vm.budgetStatus {
         case .overBudget:   lbl_remaining.textColor = .systemRed
-        case .nearingLimit: lbl_remaining.textColor = .systemOrange
+        case .nearingBudgetLimit: lbl_remaining.textColor = .systemOrange
         default:            lbl_remaining.textColor = .label
         }
     }
