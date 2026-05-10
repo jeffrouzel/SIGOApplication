@@ -6,7 +6,7 @@
 //
 import Foundation
 
-final class BudgetViewModel {
+class BudgetViewModel {
     // MARK: - Data
     private(set) var intervals: [Interval] = []
     private(set) var expenses: [Expense] = []
