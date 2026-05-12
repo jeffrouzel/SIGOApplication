@@ -21,6 +21,24 @@ class BudgetViewModel {
 
 // MARK: - SAVING ACTIONS
     // MARK: Interval action
+    func validateInterval(startDate: Date,
+                          endDate: Date,
+                          budgetText: String,
+                          savePercentageText: String) -> String? {
+        guard let budget = Double(budgetText), budget > 0 else {
+            return "Please enter a valid budget amount."
+        }
+        guard let savePct = Double(savePercentageText), savePct >= 0, savePct <= 100 else {
+            return "Please enter a valid save percentage (0–100)."
+        }
+        guard endDate > startDate else {
+            return "End date must be after start date."
+        }
+        guard !hasActiveInterval else {
+            return "An interval is already active. Wait for it to end first."
+        }
+        return nil
+    }
     func saveInterval(startDate: Date,
                       endDate: Date,
                       budgetText: String,

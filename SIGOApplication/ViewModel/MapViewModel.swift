@@ -23,6 +23,7 @@ final class MapDistanceViewModel {
     private(set) var routeDestination: MKMapItem?
     private(set) var currentRoute: MKRoute?
     private(set) var currentRouteInfo: RouteInfo?
+    
     var transportType: MKDirectionsTransportType = .automobile
 
     var userCoordinate: CLLocationCoordinate2D? {

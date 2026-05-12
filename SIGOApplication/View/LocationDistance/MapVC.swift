@@ -14,7 +14,7 @@ final class MapVC: UIViewController {
     @IBOutlet weak var mapView: MKMapView!
     @IBOutlet weak var locationSearchBar: UISearchBar!
     @IBOutlet weak var detailCardView: UIView!
-    //    @IBOutlet var bottomCardView: [UIView]!
+    @IBOutlet var detailViews: [UIView]!
     
     @IBOutlet weak var lbl_desName: UILabel!
     @IBOutlet weak var lbl_desAddress: UILabel!
@@ -30,6 +30,7 @@ final class MapVC: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        showUI()
         assignDelegates()
         bindViewModel()
         viewModel.requestLocationPermission()
@@ -38,14 +39,13 @@ final class MapVC: UIViewController {
     }
 
     // MARK: - Setup
-
     private func assignDelegates() {
         viewModel.locationManager.delegate = self
         viewModel.searchCompleter.delegate = self
         mapView.delegate = self
         locationSearchBar.delegate = self
     }
-    // MARK: - Binding
+    // MARK: - Data Binding
 
     private func bindViewModel() {
         viewModel.onRouteReady = { [weak self] route, info in
@@ -61,8 +61,28 @@ final class MapVC: UIViewController {
             }
         }
     }
+    // MARK: - UI
+    private func updateDetailsCard(with info: RouteInfo) {
+        lbl_desName.text = info.destinationName
+        lbl_desAddress.text = info.destinationAddress.isEmpty
+            ? "Location found"
+            : info.destinationAddress
+        lbl_traveltime.text = viewModel.travelTimeText
+        lbl_distance.text = viewModel.distanceText
+        detailCardView.isHidden = false
+    }
+    private func showUI(){
+        view.setGradientBackground(isDay: true)
+        locationSearchBar.styleRounded()
+        detailCardView.styleAsCard()
+        detailViews.forEach {$0.styleAsCardOrange()}
+        
+        mapView.layer.cornerRadius = 24
+        mapView.clipsToBounds = true
+        mapView.layer.borderWidth = 3
+        mapView.layer.borderColor = UIColor.black.cgColor
+    }
     // MARK: - Map
-
     private func displayRoute(_ route: MKRoute?, info: RouteInfo) {
         // Remove previous state
         mapView.removeOverlays(mapView.overlays)
@@ -92,7 +112,7 @@ final class MapVC: UIViewController {
         updateDetailsCard(with: info)
     }
 
-    private func clearMapRoute() {
+    private func clearMapRouteUI() {
         mapView.removeOverlays(mapView.overlays)
         if let annotation = destinationAnnotation {
             mapView.removeAnnotation(annotation)
@@ -113,21 +133,9 @@ final class MapVC: UIViewController {
         alert.addAction(UIAlertAction(title: "OK", style: .default))
         present(alert, animated: true)
     }
-    // MARK: - Bottom Card
-    private func updateDetailsCard(with info: RouteInfo) {
-        lbl_desName.text = info.destinationName
-        lbl_desAddress.text = info.destinationAddress.isEmpty
-            ? "Location found"
-            : info.destinationAddress
-        lbl_traveltime.text = viewModel.travelTimeText
-        lbl_distance.text = viewModel.distanceText
-        detailCardView.isHidden = false
-    }
 }
 // MARK: - CLLocationManagerDelegate
-
 extension MapVC: CLLocationManagerDelegate {
-
     func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
         switch manager.authorizationStatus {
         case .authorizedWhenInUse, .authorizedAlways:
@@ -154,9 +162,7 @@ extension MapVC: CLLocationManagerDelegate {
     }
 }
 // MARK: - MKLocalSearchCompleterDelegate
-
 extension MapVC: MKLocalSearchCompleterDelegate {
-
     func completerDidUpdateResults(_ completer: MKLocalSearchCompleter) {
         print("Completer results: \(completer.results.count)")
         guard let completion = completer.results.first else { return }
@@ -182,13 +188,11 @@ extension MapVC: MKLocalSearchCompleterDelegate {
     }
 }
 // MARK: - UISearchBarDelegate
-
 extension MapVC: UISearchBarDelegate {
-
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
         viewModel.updateSearchQuery(searchText)
         if searchText.isEmpty {
-            clearMapRoute()
+            clearMapRouteUI()
         }
     }
 
@@ -200,7 +204,7 @@ extension MapVC: UISearchBarDelegate {
         searchBar.text = nil
         searchBar.resignFirstResponder()
         viewModel.clearRoute()
-        clearMapRoute()
+        clearMapRouteUI()
     }
 }
 // MARK: - MKMapViewDelegate

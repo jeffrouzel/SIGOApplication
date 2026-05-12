@@ -11,8 +11,10 @@ class HistoryVC: UIViewController {
     @IBOutlet weak var pickerViewHistory: UIPickerView!
     @IBOutlet weak var tableViewHistory: UITableView!
     @IBOutlet weak var searchBarHistory: UISearchBar!
-    @IBOutlet weak var intervalsHistoryDD: UIStackView!
+    @IBOutlet weak var btn_IntervalHistory: UIButton!
+    @IBOutlet weak var chevronIcon: UIImageView!
     
+    @IBOutlet weak var expensesHistoryView: UIView!
     var vm: BudgetViewModel!
 
     private var selectedInterval: Interval? = nil
@@ -22,17 +24,10 @@ class HistoryVC: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        pickerViewHistory.delegate   = self
-        pickerViewHistory.dataSource = self
-        tableViewHistory.dataSource  = self
-        tableViewHistory.delegate    = self
-        searchBarHistory.delegate    = self
-        
-        dropdownUI()
-        
-        print("vm is \(String(describing: vm))")
+        assignDelegatesandDataSources()
+        updateUI()
 
-        // Auto select first interval if any
+        // Auto select the first interval in the history
         if let first = vm.intervals.first {
             selectedInterval  = first
             displayedExpenses = vm.expenses(for: first)
@@ -41,16 +36,40 @@ class HistoryVC: UIViewController {
         pickerViewHistory.reloadAllComponents()
         tableViewHistory.reloadData()
     }
-    // MARK: INTERVAL HISTORY DROPDOWN
-    @IBAction func dropdownHistoryTapped(_ sender: UIButton) {
-        pickerViewHistory.isHidden.toggle()
-
+    // MARK: - Setup
+    private func assignDelegatesandDataSources(){
+        pickerViewHistory.delegate   = self
+        pickerViewHistory.dataSource = self
+        tableViewHistory.dataSource  = self
+        tableViewHistory.delegate    = self
+        searchBarHistory.delegate    = self
     }
-    private func dropdownUI(){
-        intervalsHistoryDD.layer.borderWidth = 1
-        intervalsHistoryDD.layer.borderColor = UIColor.black.cgColor
-        intervalsHistoryDD.layer.cornerRadius = 8
-        intervalsHistoryDD.clipsToBounds = true
+    // MARK: - UI
+    private func updateUI(){
+        view.setGradientBackground(isDay: true)
+        expensesHistoryView.styleAsCard()
+        searchBarHistory.styleRounded()
+        
+        pickerViewHistory.layer.cornerRadius = 20
+    }
+    // MARK: - INTERVAL HISTORY DROPDOWN
+    @IBAction func dropdownHistoryTapped(_ sender: UIButton) {
+        let shouldShow = pickerViewHistory.isHidden
+
+        if shouldShow {
+            pickerViewHistory.isHidden = false
+            pickerViewHistory.alpha    = 0
+            chevronIcon.image = UIImage(systemName: "chevron.up")
+        }
+
+        UIView.animate(withDuration: 0.25) {
+            self.pickerViewHistory.alpha = shouldShow ? 1 : 0
+        } completion: { _ in
+            if !shouldShow {
+                self.pickerViewHistory.isHidden = true
+                self.chevronIcon.image = UIImage(systemName: "chevron.down")
+            }
+        }
     }
 }
 
@@ -120,7 +139,7 @@ extension HistoryVC: UITableViewDataSource, UITableViewDelegate {
     }
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "historycell", for: indexPath)
+        let cell = tableView.dequeueReusableCell(withIdentifier: "historyCell", for: indexPath)
         let expense = activeExpenses[indexPath.row]
 
         var config = cell.defaultContentConfiguration()

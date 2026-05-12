@@ -185,6 +185,8 @@ class ViewController: UIViewController {
         dd_config.title = "\(weatherViewModel.forecastRangeText)"
         dd_config.subtitle = "\(weatherViewModel.forecastIndexLabel) \(weatherViewModel.weatherDatePageTitle)"
         btn_dropdown.configuration = dd_config
+        
+        pickerView.layer.cornerRadius = 20
     }
     
         // MARK: Dropdown Button Action

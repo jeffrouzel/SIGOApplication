@@ -47,7 +47,6 @@ class BudgetVC: UIViewController {
         tableView.dataSource = self
         tableView.delegate   = self
         expensesSearchBar.delegate   = self
-        
         uiStyle()
     }
     

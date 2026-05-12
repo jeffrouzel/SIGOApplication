@@ -8,30 +8,47 @@ import UIKit
 
 class ExpenseVC: UIViewController {
 
-    // Connect these in storyboard
+    @IBOutlet weak var remainingBalView: UIView!
     @IBOutlet weak var lbl_remaining: UILabel!
     @IBOutlet weak var amountTextField: UITextField!
     @IBOutlet weak var detailsTextField: UITextField!
 
+    @IBOutlet weak var btn_addExpense: UIButton!
     var vm: BudgetViewModel!   // passed from BudgetVC via prepare(for:)
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        updateRemainingLabel()
+        updateUI()
     }
 
-    private func updateRemainingLabel() {
+    private func updateUI() {
+        view.setGradientBackground(isDay: true)
+        remainingBalView.styleAsCard()
+        remainingBalView.layer.borderWidth = 5
+        remainingBalView.layer.borderColor = UIColor.systemOrange.cgColor
+        
         lbl_remaining.text = "₱\(String(format: "%.2f", vm.remaining))"
 
-        // Change color based on budget status
+        // Change text color of remaining bal based on budget status
         switch vm.budgetStatus {
-        case .overBudget:   lbl_remaining.textColor = .systemRed
-        case .nearingBudgetLimit: lbl_remaining.textColor = .systemOrange
-        default:            lbl_remaining.textColor = .label
+        case .noInterval:
+            lbl_remaining.textColor = .systemGray
+        case .onBudget:
+            lbl_remaining.textColor = .systemGreen
+        case .onSaveGoal:
+            lbl_remaining.textColor = UIColor(red: 0.6, green: 0.8, blue: 0.0, alpha: 1)  // lime green
+        case .nearingBudgetLimit:
+            lbl_remaining.textColor = .systemYellow
+        case .onBudgetLimit:
+            lbl_remaining.textColor = .systemRed
+        case .overBudget:
+            lbl_remaining.textColor = .systemGray
         }
+        
+        btn_addExpense.styleAsFloatingButton()
     }
 
-    // MARK: ADD AN EXPENSE
+    // MARK: - ADD AN EXPENSE ACTION (Button)
     @IBAction func addExpenseTapped(_ sender: UIButton) {
         let amountText  = amountTextField.text ?? ""
         let detailsText = detailsTextField.text ?? ""
@@ -42,7 +59,7 @@ class ExpenseVC: UIViewController {
             // Clear fields and update the remaining label
             amountTextField.text  = ""
             detailsTextField.text = ""
-            updateRemainingLabel()
+            updateUI()
             navigationController?.popViewController(animated: true)
         }
     }
