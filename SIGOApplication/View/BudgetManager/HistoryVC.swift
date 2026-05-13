@@ -50,9 +50,26 @@ class HistoryVC: UIViewController {
         expensesHistoryView.styleAsCard()
         searchBarHistory.styleRounded()
         
+        dropdownButtonUI()
         pickerViewHistory.layer.cornerRadius = 20
     }
     // MARK: - INTERVAL HISTORY DROPDOWN
+    private func dropdownButtonUI() {
+        var dd_config = btn_IntervalHistory.configuration ?? UIButton.Configuration.filled()
+        
+        dd_config.titleTextAttributesTransformer = UIConfigurationTextAttributesTransformer { attributes in
+            var updated = attributes
+            updated.font = UIFont.boldSystemFont(ofSize: 25)
+            return updated
+        }
+        
+        dd_config.subtitleTextAttributesTransformer = UIConfigurationTextAttributesTransformer { attributes in
+            var updated = attributes
+            updated.font = UIFont.systemFont(ofSize: 15, weight: .semibold)
+            return updated
+        }
+        btn_IntervalHistory.configuration = dd_config
+    }
     @IBAction func dropdownHistoryTapped(_ sender: UIButton) {
         let shouldShow = pickerViewHistory.isHidden
 
@@ -70,6 +87,10 @@ class HistoryVC: UIViewController {
                 self.chevronIcon.image = UIImage(systemName: "chevron.down")
             }
         }
+        
+        var dd_config = btn_IntervalHistory.configuration
+        dd_config?.subtitle   = shouldShow ? "Hide" : "Show"
+        btn_IntervalHistory.configuration = dd_config
     }
 }
 
