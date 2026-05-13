@@ -42,7 +42,14 @@ class WeatherViewModel{
         }
     }
     
-    // MARK: HEAD DATA
+    // MARK: - UI RELATED
+    // NIGHT/DAY SETTER
+    var isDay: Bool {
+        guard let forecast = selectedForecast else { return true }
+        guard let timezone = weather?.city.timezone else { return true }
+        return isDayTime(unix: forecast.dt, timezone: timezone)
+    }
+    // MARK: - HEAD DATA
     var cityName: String {
         weather?.city.name ?? ""
     }
@@ -50,18 +57,7 @@ class WeatherViewModel{
     var countryName: String {
         weather?.city.country ?? ""
     }
-    
-    var sunriseText: String {
-        guard let weather else { return "--:--" }
-        return formatTime(weather.city.sunrise, timezone: weather.city.timezone)
-    }
-
-    var sunsetText: String {
-        guard let weather else { return "--:--" }
-        return formatTime(weather.city.sunset, timezone: weather.city.timezone)
-    }
-    
-    // MARK: FOR WEATHER FORECAST LIST (up to 40 items, every 3hrs for 5 days)
+    // MARK: - FOR WEATHER FORECAST LIST (up to 40 items, every 3 hrs interval for 5 days)
     
     var selectedIndex: Int = 0 {
         didSet {
@@ -75,7 +71,8 @@ class WeatherViewModel{
     private var selectedForecast: ForecastItem? {
         weather?.list[selectedIndex]
     }
-    // MARK: FORECAST DATA
+    
+    // MARK: FORECAST DATA (MAIN)
     // Main items
     var temperatureText: String {
         guard let temp = selectedForecast?.main.temp else { return "--°C" }
@@ -97,41 +94,46 @@ class WeatherViewModel{
         return "Max: \(Int(maxTemp.rounded()))°C"
     }
     
+    // MARK: FORECAST DATA (DETAILS)
+    // Humidity
     var humidityText: String {
         guard let humidity = selectedForecast?.main.humidity else { return "--" }
         return "\(humidity)%"
-    }
-    
-    var windSpeedText: String {
-        guard let windSpeed = selectedForecast?.wind.speed else { return "--" }
-        return "\(Int(windSpeed.rounded())) km/h"
-    }
-    
-    // Weather Items
-    var conditionText: String {
-        selectedForecast?.weather.first?.description.capitalized ?? "Unknown"
     }
     // Rain Related
     var precipitationChance: String {
         guard let pop = selectedForecast?.pop else { return "--" }
         return "\(Int((pop * 100).rounded()))%"
     }
+    // Wind
+    var windSpeedText: String {
+        guard let windSpeed = selectedForecast?.wind.speed else { return "--" }
+        return "\(Int(windSpeed.rounded())) km/h"
+    }
     
-    var rainDropSize: String? {
-        guard let threeHourRainData = selectedForecast?.rain else { return "--" }
-        return "\(threeHourRainData) mm"
+    
+    
+    var sunriseText: String {
+        guard let weather else { return "--:--" }
+        return formatTime(weather.city.sunrise, timezone: weather.city.timezone)
     }
 
-    // MARK: Logic for WeatherIcons
-
-    var isDay: Bool {
-        guard let weather,
-              let dt = selectedForecast?.dt else { return true }
-        let current = dt + weather.city.timezone
-        return current >= weather.city.sunrise + weather.city.timezone &&
-        current < weather.city.sunset + weather.city.timezone
+    var sunsetText: String {
+        guard let weather else { return "--:--" }
+        return formatTime(weather.city.sunset, timezone: weather.city.timezone)
     }
+//     Weather Items
+    var conditionText: String {
+        selectedForecast?.weather.first?.description.capitalized ?? "Unknown"
+    }
+    
+    
+//    var rainDropSize: String? {
+//        guard let threeHourRainData = selectedForecast?.rain else { return "--" }
+//        return "\(threeHourRainData) mm"
+//    }
 
+    // MARK: - Logic for WeatherIcons
     var weatherIconName: String {
         let condition = selectedForecast?.weather.first?.main ?? "Clear"
         switch condition.lowercased() {
@@ -151,19 +153,23 @@ class WeatherViewModel{
             return "cloud.fill"
         }
     }
-    // MARK: Private helpers
-    private func formatTime(_ unix: Int, timezone: Int) -> String {
-        let date = Date(timeIntervalSince1970: TimeInterval(unix))
-        let formatter = DateFormatter()
-        formatter.dateFormat = "h:mm a"
-        formatter.timeZone = TimeZone(secondsFromGMT: timezone)
-        return formatter.string(from: date)
+    // MARK: - DATA FOR Forecast Interval
+    var forecastIndexLabel: String {
+        selectedIndex < 6 ? "Today:" : "Forecast:"
+    }
+    var forecastRangeText: String {
+        guard let weather = weather,
+              let forecast = selectedForecast else { return "--:--" }
+
+        let start = formatTime(forecast.dt, timezone: weather.city.timezone)
+        let end   = formatTime(forecast.dt + 3 * 3600, timezone: weather.city.timezone)
+
+        return "\(start) - \(end)"
     }
     
-    // MARK: FOR FORECAST DROPDOWN
-    // Labels
-    func labelForIndex(_ index: Int) -> String {
-        if index == 0 { return "Current" }
+    // Labels for Dropdown Picker
+    func labelForIndexDD(_ index: Int) -> String {
+        if index == 0 { return "Latest Available" }
         
         let totalHours = index * 3
         let days = totalHours / 24
@@ -179,9 +185,9 @@ class WeatherViewModel{
     // Array of the labels
     var forecastLabels: [String] {
         guard let timelist = weather?.list else { return [] }
-        return timelist.indices.map { labelForIndex($0) } // acts like (index in labelForIndex(index)) useful implementation to shorten code
+        return timelist.indices.map { labelForIndexDD($0) } // acts like (index in labelForIndex(index)) useful implementation to shorten code
     }
-    // MARK: LOGIC FOR WEATHER TIPS
+    // MARK: - LOGIC FOR WEATHER TIPS
     var weatherTip: String {
         guard let forecast = selectedForecast else { return "" }
 
@@ -193,9 +199,9 @@ class WeatherViewModel{
         switch condition {
         case "rain", "drizzle":
             if pop >= 70 {
-                return "Heavy rain expected. Bringing an umbrella is a must. Also be careful of big puddles!!"
+                return "Careful there is a high chance of rain. Bringing an umbrella is a must"
             } else {
-                return "Light rain possible (\(pop)% chance). An umbrella wouldn't hurt."
+                return "Low chance of rain, but bringing an umbrella wouldn't hurt."
             }
 
         case "thunderstorm":
@@ -203,9 +209,9 @@ class WeatherViewModel{
 
         case "clear":
             if temp >= 35 {
-                return "⚠️ Caution!! High temperature of \(temp)°C. Stay hydrated and wear sunscreen."
+                return "⚠️ Caution!! High temperature of \(temp)°C. Stay hydrated and bring a fan."
             } else if temp >= 30 {
-                return "Warm and clear. Great weather — just watch the heat."
+                return "Warm and clear. Great weather, just watch the heat."
             } else {
                 return isDay ? "Clear skies today. Enjoy the weather!" : "Clear night sky tonight. Good for stargazing!!"
             }
@@ -225,22 +231,13 @@ class WeatherViewModel{
             return "⚠️ Low visibility due to \(condition). Have caution while traveling."
 
         default:
-            if pop >= 50 {
-                return "A chance of (\(pop)%) to rain!! Consider bringing an umbrella."
-            }
-            return "Have a nice day!"
+            return "Good to headout, Have a nice day!"
         }
     }
     var weatherDatePageTitle: String {
         guard let forecast = selectedForecast,
               let weather = weather else { return "Weather Tip" }
-        
-        let date = Date(timeIntervalSince1970: TimeInterval(forecast.dt))
-        let formatter = DateFormatter()
-        formatter.dateFormat = "MM/dd/yyyy"
-        formatter.timeZone = TimeZone(secondsFromGMT: weather.city.timezone)
-        
-        return "\(formatter.string(from: date))"
+        return formatDate(forecast.dt, timezone: weather.city.timezone)
     }
 }
 
