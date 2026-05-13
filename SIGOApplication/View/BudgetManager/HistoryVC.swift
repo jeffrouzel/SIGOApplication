@@ -7,7 +7,7 @@
 import UIKit
 
 class HistoryVC: UIViewController {
-
+    //MARK: - OUTLETS
     @IBOutlet weak var pickerViewHistory: UIPickerView!
     @IBOutlet weak var tableViewHistory: UITableView!
     @IBOutlet weak var searchBarHistory: UISearchBar!
@@ -21,7 +21,7 @@ class HistoryVC: UIViewController {
     private var displayedExpenses: [Expense] = []
     private var filteredExpenses: [Expense] = []
     private var isSearching: Bool = false
-
+    // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
         assignDelegatesandDataSources()

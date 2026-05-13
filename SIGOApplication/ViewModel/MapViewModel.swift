@@ -12,7 +12,7 @@ final class MapDistanceViewModel {
 
     // MARK: - Managers
     let locationManager = CLLocationManager()
-    let searchCompleter = MKLocalSearchCompleter()
+    let searchCompleter = MKLocalSearchCompleter()      // auto complete search local
 
     // MARK: - Callbacks
     var onRouteReady: ((MKRoute?, RouteInfo) -> Void)?
@@ -55,6 +55,7 @@ final class MapDistanceViewModel {
         userLocation = location
         locationManager.stopUpdatingLocation()
 
+        // find location within 50km radius
         searchCompleter.region = MKCoordinateRegion(
             center: location.coordinate,
             latitudinalMeters: 50_000,
@@ -81,7 +82,6 @@ final class MapDistanceViewModel {
     // MARK: - Route
 
     func fetchRoute() {
-        print("Fetching route to: \(routeDestination?.name ?? "nil")")
         guard let userLocation, let routeDestination else {
             onError?("Unable to calculate route. Make sure location is enabled.")
             return

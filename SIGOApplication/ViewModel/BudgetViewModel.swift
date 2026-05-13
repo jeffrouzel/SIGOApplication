@@ -133,7 +133,7 @@ class BudgetViewModel {
             expenses = decoded
         }
     }
-    // MARK: - UI RELATED
+    // MARK: - Pass on Values
     var hasActiveInterval: Bool {
         intervals.contains { $0.isActive }
     }

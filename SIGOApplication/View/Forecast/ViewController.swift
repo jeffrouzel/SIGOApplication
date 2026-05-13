@@ -10,7 +10,7 @@ import UIKit
 import CoreLocation
 
 class ViewController: UIViewController {
-    
+    //MARK: - OUTLETS
     // Views
     @IBOutlet weak var mainInfo: UIView!
     @IBOutlet weak var temperatureView: UIView!
@@ -44,19 +44,13 @@ class ViewController: UIViewController {
     var weatherViewModel: WeatherViewModel = WeatherViewModel()
     private let locationManager = CLLocationManager()
 
+    // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
-        // Dropdown
-        pickerView.isHidden = true
-        pickerView.delegate = self
-        pickerView.dataSource = self
-        // Location
-        locationManager.delegate = self
+        bindViewModel()
+        assignDelegatesandDataSources()
         locationManager.requestWhenInUseAuthorization()
         locationManager.startUpdatingLocation()
-        // View Model
-        bindViewModel()
-        
     }
     
     // MARK: - Data Binding
@@ -73,6 +67,13 @@ class ViewController: UIViewController {
             }
         }
     }
+    // MARK: - SETUP
+    private func assignDelegatesandDataSources(){
+        pickerView.isHidden = true
+        pickerView.delegate = self
+        pickerView.dataSource = self
+        locationManager.delegate = self
+    }
 // MARK: - Passing of values
     private func showContent() {
         // UI
@@ -80,7 +81,7 @@ class ViewController: UIViewController {
         pickerView.reloadAllComponents()
         
         // pass on values
-        lbl_city.text = weatherViewModel.cityName
+        lbl_city.text = "\(weatherViewModel.cityName), \(weatherViewModel.countryName)"
         lbl_temp.text = weatherViewModel.temperatureText
         lbl_feelslike.text = weatherViewModel.feelsLikeText
         lbl_minTemp.text = weatherViewModel.minTempText
@@ -108,8 +109,6 @@ class ViewController: UIViewController {
 // MARK: - UI MODIFICATIONS
     private func updateUI() {
         let isDay = weatherViewModel.isDay
-        setCardsnBackground()
-
         // Main Info
         mainInfoUI(isDay: isDay)
         // Dropdown button
@@ -123,21 +122,10 @@ class ViewController: UIViewController {
         btn_weatherTip.configuration = tipConfig
         btn_weatherTip.styleAsFloatingButton()
     }
-    private func setCardsnBackground() {
-        let isDay = weatherViewModel.isDay
-        view.setGradientBackground(isDay: isDay)
 
-        // Card colors stay here since they're specific to this screen
-        let cardColor = isDay
-            ? UIColor.white.withAlphaComponent(0.85)
-            : UIColor.white.withAlphaComponent(0.1)
-
-        [mainInfo, temperatureView, detailsView, sunView].forEach {
-            $0?.backgroundColor = cardColor
-        }
-    }
-// MARK: - Main Info Related UI
+// Main Info Related UI
     private func mainInfoUI(isDay: Bool) {
+        view.setGradientBackground(isDay: isDay)
         mainInfo.styleAsCard()
         temperatureView.styleAsCard()
         detailsView.styleAsCard()
@@ -215,6 +203,7 @@ class ViewController: UIViewController {
             dest.isDay      = weatherViewModel.isDay
             dest.weatherTip = weatherViewModel.weatherTip
             dest.iconName = weatherViewModel.weatherIconName
+            dest.condition = weatherViewModel.conditionText
             dest.hidesBottomBarWhenPushed = true
         }
     }
@@ -222,12 +211,13 @@ class ViewController: UIViewController {
         performSegue(withIdentifier: "toWeatherTip", sender: self)
     }
 }
-// MARK: - MAPS DATASOURCE AND DELEGATE
+// MARK: DATASOURCE AND DELEGATES
+// CLLocation
 extension ViewController: CLLocationManagerDelegate {
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         guard let location = locations.last else { return }
         locationManager.stopUpdatingLocation()
-
+        
         weatherViewModel.fetchWeather(
             lat: location.coordinate.latitude,
             lon: location.coordinate.longitude
@@ -239,7 +229,7 @@ extension ViewController: CLLocationManagerDelegate {
     }
 }
 
-// MARK: - DROPDOWN DATASOURCE AND DELEGATE
+// PickerView
 extension ViewController: UIPickerViewDataSource, UIPickerViewDelegate {
     // Only needs one as I am only picking one, not like a date with many picks
     func numberOfComponents(in pickerView: UIPickerView) -> Int {

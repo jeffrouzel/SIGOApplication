@@ -7,7 +7,7 @@
 import UIKit
 
 class BudgetVC: UIViewController {
-    
+    //MARK: - OUTLETS
     // Interval Card
     @IBOutlet weak var intervalView: UIView!
     @IBOutlet weak var lbl_intervalDate: UILabel!
@@ -41,12 +41,10 @@ class BudgetVC: UIViewController {
     private var currentExpenses: [Expense] = []
     private var filteredExpenses: [Expense] = []
     private var isSearching: Bool = false
-    
+    // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
-        tableView.dataSource = self
-        tableView.delegate   = self
-        expensesSearchBar.delegate   = self
+        assignDelegatesandDataSources()
         uiStyle()
     }
     
@@ -54,7 +52,13 @@ class BudgetVC: UIViewController {
         super.viewWillAppear(animated)
         showContent()
     }
-    
+    // MARK: - SETUP
+    private func assignDelegatesandDataSources(){
+        tableView.dataSource = self
+        tableView.delegate   = self
+        expensesSearchBar.delegate   = self
+    }
+    // MARK: - DATA BINDING
     private func showContent() {
         loadExpenses()
         tableView.reloadData()

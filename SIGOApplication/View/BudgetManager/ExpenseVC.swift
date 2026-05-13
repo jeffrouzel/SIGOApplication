@@ -7,15 +7,15 @@
 import UIKit
 
 class ExpenseVC: UIViewController {
-
+    //MARK: - OUTLETS
     @IBOutlet weak var remainingBalView: UIView!
     @IBOutlet weak var lbl_remaining: UILabel!
     @IBOutlet weak var amountTextField: UITextField!
     @IBOutlet weak var detailsTextField: UITextField!
 
     @IBOutlet weak var btn_addExpense: UIButton!
-    var vm: BudgetViewModel!   // passed from BudgetVC via prepare(for:)
-
+    var vm: BudgetViewModel!
+    // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
         updateUI()

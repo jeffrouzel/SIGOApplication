@@ -8,7 +8,7 @@ import UIKit
 
 class IntervalVC: UIViewController {
 
-    // MARK: - Outlets
+    //MARK: - OUTLETS
     @IBOutlet weak var titleView: UIView!
     @IBOutlet var inputViews: [UIView]!
     @IBOutlet weak var saveAmountView: UIView!
@@ -22,10 +22,10 @@ class IntervalVC: UIViewController {
     
     var vm: BudgetViewModel!
 
-    // Percentage options 0-100 in steps of 5
+    // Percentage options
     private let percentageOptions = stride(from: 0, through: 100, by: 5).map { $0 }
     private var selectedPercentage: Int = 20  // default 20%
-
+    // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
         assignDelegatesandDataSources()

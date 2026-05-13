@@ -43,7 +43,7 @@ class WeatherViewModel{
     }
     
     // MARK: - UI RELATED
-    // MARK: NIGHT/DAY SETTER
+    // NIGHT/DAY SETTER
     var isDay: Bool {
         guard let forecast = selectedForecast else { return true }
         guard let timezone = weather?.city.timezone else { return true }
@@ -54,9 +54,9 @@ class WeatherViewModel{
         weather?.city.name ?? ""
     }
 
-//    var countryName: String {
-//        weather?.city.country ?? ""
-//    }
+    var countryName: String {
+        weather?.city.country ?? ""
+    }
     // MARK: - FOR WEATHER FORECAST LIST (up to 40 items, every 3 hrs interval for 5 days)
     
     var selectedIndex: Int = 0 {
@@ -122,10 +122,10 @@ class WeatherViewModel{
         guard let weather else { return "--:--" }
         return formatTime(weather.city.sunset, timezone: weather.city.timezone)
     }
-    // Weather Items
-//    var conditionText: String {
-//        selectedForecast?.weather.first?.description.capitalized ?? "Unknown"
-//    }
+//     Weather Items
+    var conditionText: String {
+        selectedForecast?.weather.first?.description.capitalized ?? "Unknown"
+    }
     
     
 //    var rainDropSize: String? {
@@ -167,8 +167,7 @@ class WeatherViewModel{
         return "\(start) - \(end)"
     }
     
-    // MARK: - FOR FORECAST DROPDOWN
-    // Labels
+    // Labels for Dropdown Picker
     func labelForIndexDD(_ index: Int) -> String {
         if index == 0 { return "Latest Available" }
         
@@ -200,9 +199,9 @@ class WeatherViewModel{
         switch condition {
         case "rain", "drizzle":
             if pop >= 70 {
-                return "Heavy rain expected. Bringing an umbrella is a must. Also be careful of big puddles!!"
+                return "Careful there is a high chance of rain. Bringing an umbrella is a must"
             } else {
-                return "Light rain possible (\(pop)% chance). An umbrella wouldn't hurt."
+                return "Low chance of rain, but bringing an umbrella wouldn't hurt."
             }
 
         case "thunderstorm":
@@ -210,9 +209,9 @@ class WeatherViewModel{
 
         case "clear":
             if temp >= 35 {
-                return "⚠️ Caution!! High temperature of \(temp)°C. Stay hydrated and wear sunscreen."
+                return "⚠️ Caution!! High temperature of \(temp)°C. Stay hydrated and bring a fan."
             } else if temp >= 30 {
-                return "Warm and clear. Great weather — just watch the heat."
+                return "Warm and clear. Great weather, just watch the heat."
             } else {
                 return isDay ? "Clear skies today. Enjoy the weather!" : "Clear night sky tonight. Good for stargazing!!"
             }
@@ -232,10 +231,7 @@ class WeatherViewModel{
             return "⚠️ Low visibility due to \(condition). Have caution while traveling."
 
         default:
-            if pop >= 50 {
-                return "A chance of (\(pop)%) to rain!! Consider bringing an umbrella."
-            }
-            return "Have a nice day!"
+            return "Good to headout, Have a nice day!"
         }
     }
     var weatherDatePageTitle: String {

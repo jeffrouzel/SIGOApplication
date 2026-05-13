@@ -10,7 +10,7 @@ import CoreLocation
 
 final class MapVC: UIViewController {
 
-    // MARK: - IBOutlets
+    //MARK: - OUTLETS
     @IBOutlet weak var mapView: MKMapView!
     @IBOutlet weak var locationSearchBar: UISearchBar!
     @IBOutlet weak var detailCardView: UIView!
@@ -21,41 +21,39 @@ final class MapVC: UIViewController {
     @IBOutlet weak var lbl_traveltime: UILabel!
     @IBOutlet weak var lbl_distance: UILabel!
 
-    // MARK: - Properties
-    private let viewModel = MapDistanceViewModel()
+    private let mapViewModel = MapDistanceViewModel()
     private var destinationAnnotation: MKPointAnnotation?
     private var lastRouteInfo: RouteInfo?
     
     // MARK: - Lifecycle
-
     override func viewDidLoad() {
         super.viewDidLoad()
         showUI()
         assignDelegates()
         bindViewModel()
-        viewModel.requestLocationPermission()
+        mapViewModel.requestLocationPermission()            // ask for permission again for location
         detailCardView.isHidden = true
         print("VC loaded")
     }
 
     // MARK: - Setup
     private func assignDelegates() {
-        viewModel.locationManager.delegate = self
-        viewModel.searchCompleter.delegate = self
+        mapViewModel.locationManager.delegate = self
+        mapViewModel.searchCompleter.delegate = self
         mapView.delegate = self
         locationSearchBar.delegate = self
     }
     // MARK: - Data Binding
 
     private func bindViewModel() {
-        viewModel.onRouteReady = { [weak self] route, info in
+        mapViewModel.onRouteReady = { [weak self] route, info in
             DispatchQueue.main.async {
                 self?.lastRouteInfo = info
                 self?.displayRoute(route, info: info)
             }
         }
 
-        viewModel.onError = { [weak self] message in
+        mapViewModel.onError = { [weak self] message in
             DispatchQueue.main.async {
                 self?.showError(message)
             }
@@ -67,8 +65,8 @@ final class MapVC: UIViewController {
         lbl_desAddress.text = info.destinationAddress.isEmpty
             ? "Location found"
             : info.destinationAddress
-        lbl_traveltime.text = viewModel.travelTimeText
-        lbl_distance.text = viewModel.distanceText
+        lbl_traveltime.text = mapViewModel.travelTimeText
+        lbl_distance.text = mapViewModel.distanceText
         detailCardView.isHidden = false
     }
     private func showUI(){
@@ -92,7 +90,7 @@ final class MapVC: UIViewController {
         }
 
         // Add destination pin
-        if let mapItem = viewModel.routeDestination {
+        if let mapItem = mapViewModel.routeDestination {
             let annotation = MKPointAnnotation()
             annotation.coordinate = mapItem.location.coordinate
             annotation.title = mapItem.name
@@ -120,7 +118,7 @@ final class MapVC: UIViewController {
         }
         detailCardView.isHidden = true
 
-        if let userCoord = viewModel.userCoordinate {
+        if let userCoord = mapViewModel.userCoordinate {
             let region = MKCoordinateRegion(center: userCoord,
                                             latitudinalMeters: 1000,
                                             longitudinalMeters: 1000)
@@ -134,8 +132,10 @@ final class MapVC: UIViewController {
         present(alert, animated: true)
     }
 }
-// MARK: - CLLocationManagerDelegate
+// MARK: - DELEGATES
+// CLLocationManager
 extension MapVC: CLLocationManagerDelegate {
+    // USER REQUEST FOR LOC
     func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
         switch manager.authorizationStatus {
         case .authorizedWhenInUse, .authorizedAlways:
@@ -147,13 +147,14 @@ extension MapVC: CLLocationManagerDelegate {
         }
     }
 
+    // ZOOM IN to current loc
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         guard let location = locations.last else { return }
-        viewModel.handleLocationUpdate(location)
+        mapViewModel.handleLocationUpdate(location)
 
         let region = MKCoordinateRegion(center: location.coordinate,
-                                        latitudinalMeters: 1000,
-                                        longitudinalMeters: 1000)
+                                        latitudinalMeters: 500,
+                                        longitudinalMeters: 500)
         mapView.setRegion(region, animated: true)
     }
 
@@ -161,8 +162,9 @@ extension MapVC: CLLocationManagerDelegate {
         showError("Location error: \(error.localizedDescription)")
     }
 }
-// MARK: - MKLocalSearchCompleterDelegate
+// MKLocalSearchCompleter
 extension MapVC: MKLocalSearchCompleterDelegate {
+    // run in background, get first suggestion result then get its address through MKLocal Search
     func completerDidUpdateResults(_ completer: MKLocalSearchCompleter) {
         print("Completer results: \(completer.results.count)")
         guard let completion = completer.results.first else { return }
@@ -178,7 +180,7 @@ extension MapVC: MKLocalSearchCompleterDelegate {
                 guard let mapItem = response?.mapItems.first else { return }
 
                 DispatchQueue.main.async {
-                    self.viewModel.selectMapItem(mapItem)
+                    self.mapViewModel.selectMapItem(mapItem)
                 }
             }
     }
@@ -187,10 +189,10 @@ extension MapVC: MKLocalSearchCompleterDelegate {
         // Non-critical — silently ignore
     }
 }
-// MARK: - UISearchBarDelegate
+// Searchbar
 extension MapVC: UISearchBarDelegate {
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
-        viewModel.updateSearchQuery(searchText)
+        mapViewModel.updateSearchQuery(searchText)
         if searchText.isEmpty {
             clearMapRouteUI()
         }
@@ -203,14 +205,12 @@ extension MapVC: UISearchBarDelegate {
     func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
         searchBar.text = nil
         searchBar.resignFirstResponder()
-        viewModel.clearRoute()
+        mapViewModel.clearRoute()
         clearMapRouteUI()
     }
 }
-// MARK: - MKMapViewDelegate
-
+// Map
 extension MapVC: MKMapViewDelegate {
-
     func mapView(_ mapView: MKMapView, rendererFor overlay: MKOverlay) -> MKOverlayRenderer {
         guard let polyline = overlay as? MKPolyline else {
             return MKOverlayRenderer(overlay: overlay)
