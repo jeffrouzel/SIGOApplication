@@ -39,6 +39,7 @@ class BudgetViewModel {
         }
         return nil
     }
+    
     func saveInterval(startDate: Date,
                       endDate: Date,
                       budgetText: String,

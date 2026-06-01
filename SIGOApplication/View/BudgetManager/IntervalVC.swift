@@ -135,7 +135,7 @@ class IntervalVC: UIViewController {
     }
 }
 
-// MARK: - UIPickerView
+// MARK: - PickerView
 extension IntervalVC: UIPickerViewDataSource, UIPickerViewDelegate {
 
     func numberOfComponents(in pickerView: UIPickerView) -> Int {
@@ -156,7 +156,7 @@ extension IntervalVC: UIPickerViewDataSource, UIPickerViewDelegate {
     }
 }
 
-// MARK: - UITextFieldDelegate
+// MARK: - TextField
 extension IntervalVC: UITextFieldDelegate {
 
     func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {

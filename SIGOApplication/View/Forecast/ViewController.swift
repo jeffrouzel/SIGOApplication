@@ -212,7 +212,10 @@ class ViewController: UIViewController {
     }
 }
 // MARK: DATASOURCE AND DELEGATES
-// CLLocation
+
+
+
+// MARK: -CLLocation Delegate
 extension ViewController: CLLocationManagerDelegate {
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         guard let location = locations.last else { return }
@@ -229,7 +232,7 @@ extension ViewController: CLLocationManagerDelegate {
     }
 }
 
-// PickerView
+// MARK: - PickerView Delegate
 extension ViewController: UIPickerViewDataSource, UIPickerViewDelegate {
     // Only needs one as I am only picking one, not like a date with many picks
     func numberOfComponents(in pickerView: UIPickerView) -> Int {

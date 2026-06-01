@@ -94,7 +94,7 @@ class HistoryVC: UIViewController {
     }
 }
 
-// MARK: - UIPickerView
+// MARK: - PickerView Delegate
 extension HistoryVC: UIPickerViewDataSource, UIPickerViewDelegate {
 
     func numberOfComponents(in pickerView: UIPickerView) -> Int {
@@ -148,7 +148,7 @@ extension HistoryVC: UIPickerViewDataSource, UIPickerViewDelegate {
     }
 }
 
-// MARK: - UITableView
+// MARK: - Table View Delegate
 extension HistoryVC: UITableViewDataSource, UITableViewDelegate {
 
     private var activeExpenses: [Expense] {
@@ -171,7 +171,7 @@ extension HistoryVC: UITableViewDataSource, UITableViewDelegate {
         return cell
     }
 }
-// MARK: - UISearchBarDelegate
+// MARK: - Search Bar Delegate
 extension HistoryVC: UISearchBarDelegate {
 
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {

@@ -132,8 +132,11 @@ final class MapVC: UIViewController {
         present(alert, animated: true)
     }
 }
-// MARK: - DELEGATES
-// CLLocationManager
+// MARK: DELEGATES
+
+
+
+// MARK: - CLLocationManager Delegate
 extension MapVC: CLLocationManagerDelegate {
     // USER REQUEST FOR LOC
     func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
@@ -162,7 +165,7 @@ extension MapVC: CLLocationManagerDelegate {
         showError("Location error: \(error.localizedDescription)")
     }
 }
-// MKLocalSearchCompleter
+// MARK: - MKLocalSearchCompleter Delegate
 extension MapVC: MKLocalSearchCompleterDelegate {
     // run in background, get first suggestion result then get its address through MKLocal Search
     func completerDidUpdateResults(_ completer: MKLocalSearchCompleter) {
@@ -189,7 +192,7 @@ extension MapVC: MKLocalSearchCompleterDelegate {
         // Non-critical — silently ignore
     }
 }
-// Searchbar
+// MARK: - Searchbar Delegate
 extension MapVC: UISearchBarDelegate {
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
         mapViewModel.updateSearchQuery(searchText)
@@ -209,7 +212,7 @@ extension MapVC: UISearchBarDelegate {
         clearMapRouteUI()
     }
 }
-// Map
+// MARK: - Map Delegate
 extension MapVC: MKMapViewDelegate {
     func mapView(_ mapView: MKMapView, rendererFor overlay: MKOverlay) -> MKOverlayRenderer {
         guard let polyline = overlay as? MKPolyline else {

@@ -58,8 +58,8 @@ final class MapDistanceViewModel {
         // find location within 50km radius
         searchCompleter.region = MKCoordinateRegion(
             center: location.coordinate,
-            latitudinalMeters: 50_000,
-            longitudinalMeters: 50_000
+            latitudinalMeters: 50000,
+            longitudinalMeters: 50000
         )
         print("Location received: \(location.coordinate)")
     }
